@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>InnoTrans 2026 — Meeting Scheduler</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --bg: #ffffff;
+      --bg-secondary: #f7f7f5;
+      --border: #e5e4e0;
+      --border-light: #eeede9;
+      --text-primary: #1a1a18;
+      --text-secondary: #6b6b68;
+      --text-tertiary: #a0a09c;
+      --radius-sm: 6px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+
+    header {
+      background: var(--bg);
+      border-bottom: 0.5px solid var(--border);
+      padding: 0 1.5rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-inner {
+      max-width: 960px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 56px;
+      gap: 12px;
+    }
+
+    .header-brand { display: flex; align-items: center; gap: 10px; }
+    .header-logo {
+      width: 28px; height: 28px; background: #1a1a18; border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .header-logo span { color: #fff; font-size: 13px; font-weight: 700; }
+    .header-title { font-size: 15px; font-weight: 600; color: var(--text-primary); }
+    .header-sub { font-size: 12px; color: var(--text-tertiary); margin-top: 1px; }
+
+    .notion-pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 11px; color: var(--text-tertiary);
+      padding: 4px 10px; border: 0.5px solid var(--border);
+      border-radius: 20px; background: var(--bg-secondary);
+    }
+
+    main {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 1.5rem;
+    }
+
+    .tabs {
+      display: flex; gap: 6px; margin-bottom: 1.5rem; flex-wrap: wrap;
+    }
+
+    .tab {
+      padding: 7px 16px;
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--bg);
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-family: var(--font-sans);
+      transition: all 0.12s;
+    }
+    .tab:hover { border-color: #aaa; color: var(--text-primary); }
+    .tab.active {
+      background: var(--text-primary);
+      color: #fff;
+      border-color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    .view { display: none; }
+    .view.active { display: block; }
+
+    .card {
+      background: var(--bg);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+      box-shadow: var(--shadow);
+    }
+
+    .section-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .field { margin-bottom: 1rem; }
+    .field label {
+      display: block;
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+    .field input, .field select, .field textarea {
+      width: 100%;
+      padding: 8px 10px;
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      color: var(--text-primary);
+      background: var(--bg);
+      outline: none;
+      transition: border-color 0.12s;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus {
+      border-color: #888;
+    }
+
+    /* Day tabs */
+    .day-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1rem; }
+    .day-tab {
+      padding: 6px 14px;
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      cursor: pointer;
+      color: var(--text-secondary);
+      background: var(--bg);
+      font-family: var(--font-sans);
+    }
+    .day-tab.active {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      border-color: #aaa;
+      font-weight: 500;
+    }
+
+    /* Slot grid */
+    .slot-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(86px, 1fr));
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .slot {
+      padding: 8px 0;
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-md);
+      text-align: center;
+      font-size: 12px;
+      cursor: pointer;
+      color: var(--text-secondary);
+      background: var(--bg);
+      line-height: 1.3;
+      font-family: var(--font-sans);
+      transition: all 0.1s;
+    }
+    .slot:hover:not(.fully-taken) { border-color: #aaa; color: var(--text-primary); background: var(--bg-secondary); }
+    .slot.selected { border-color: #185FA5; color: #185FA5; background: #E6F1FB; font-weight: 500; }
+    .slot.fully-taken { background: var(--bg-secondary); color: var(--text-tertiary); cursor: default; }
+    .slot.partial { border-color: #BA7517; color: #854F0B; background: #FAEEDA; }
+    .slot-avail { font-size: 10px; margin-top: 2px; }
+
+    /* Space legend */
+    .space-legend { display: flex; gap: 16px; margin-bottom: 1rem; flex-wrap: wrap; }
+    .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-secondary); }
+    .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+    /* Space pills */
+    .space-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+    .space-pill {
+      padding: 6px 14px;
+      border: 0.5px solid var(--border);
+      border-radius: 20px;
+      font-size: 13px;
+      cursor: pointer;
+      color: var(--text-secondary);
+      background: var(--bg);
+      font-family: var(--font-sans);
+    }
+    .space-pill:hover { border-color: #aaa; background: var(--bg-secondary); }
+    .space-pill.selected-private { border-color: #185FA5; color: #0C447C; background: #E6F1FB; font-weight: 500; }
+    .space-pill.selected-informal { border-color: #0F6E56; color: #085041; background: #E1F5EE; font-weight: 500; }
+    .space-pill.disabled { opacity: 0.4; cursor: default; pointer-events: none; }
+
+    /* Host pills */
+    .host-pills { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+    .host-pill {
+      padding: 5px 12px;
+      border: 0.5px solid var(--border);
+      border-radius: 20px;
+      font-size: 12px;
+      cursor: pointer;
+      color: var(--text-secondary);
+      background: var(--bg);
+      font-family: var(--font-sans);
+    }
+    .host-pill:hover { background: var(--bg-secondary); border-color: #aaa; }
+    .selected-hosts-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; min-height: 24px; }
+    .selected-host-tag {
+      display: flex; align-items: center; gap: 4px;
+      padding: 3px 8px 3px 10px; border-radius: 20px;
+      font-size: 12px; font-weight: 500;
+    }
+    .selected-host-tag button {
+      background: none; border: none; cursor: pointer;
+      font-size: 13px; padding: 0; line-height: 1; opacity: 0.6;
+      font-family: var(--font-sans);
+    }
+    .selected-host-tag button:hover { opacity: 1; }
+
+    /* Confirm button */
+    .btn-primary {
+      padding: 10px 24px;
+      background: var(--text-primary);
+      border: none;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      color: #fff;
+      width: 100%;
+      margin-top: 0.5rem;
+      font-family: var(--font-sans);
+      transition: opacity 0.12s;
+    }
+    .btn-primary:hover { opacity: 0.85; }
+    .btn-primary:disabled { opacity: 0.45; cursor: default; }
+
+    /* Messages */
+    .success-msg {
+      background: #EAF3DE; color: #27500A;
+      border-radius: var(--radius-md); padding: 12px 16px;
+      font-size: 14px; margin-bottom: 1rem; display: none;
+    }
+    .error-msg {
+      background: #FCEBEB; color: #7A1E1E;
+      border-radius: var(--radius-md); padding: 12px 16px;
+      font-size: 14px; margin-bottom: 1rem; display: none;
+    }
+
+    /* Stats */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 1.5rem;
+    }
+    @media(max-width:600px){ .stats { grid-template-columns: repeat(2,1fr); } }
+    .stat {
+      background: var(--bg);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 0.875rem;
+      box-shadow: var(--shadow);
+    }
+    .stat-label { font-size: 11px; color: var(--text-secondary); margin-bottom: 4px; }
+    .stat-val { font-size: 22px; font-weight: 600; color: var(--text-primary); }
+
+    /* Filter row */
+    .filter-row { display: flex; gap: 8px; margin-bottom: 1rem; align-items: center; flex-wrap: wrap; }
+    .filter-row select {
+      flex: 1; min-width: 100px;
+      padding: 7px 10px;
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      background: var(--bg);
+      color: var(--text-primary);
+    }
+    .btn-outline {
+      padding: 7px 14px;
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--bg);
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      font-family: var(--font-sans);
+    }
+    .btn-outline:hover { border-color: #aaa; color: var(--text-primary); }
+
+    /* Booking list */
+    .booking-row {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 14px 0; border-bottom: 0.5px solid var(--border-light);
+    }
+    .booking-row:last-child { border-bottom: none; }
+    .booking-avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: #E6F1FB; display: flex; align-items: center;
+      justify-content: center; font-size: 12px; font-weight: 600;
+      color: #185FA5; flex-shrink: 0;
+    }
+    .booking-avatar.informal { background: #E1F5EE; color: #0F6E56; }
+    .booking-meta { flex: 1; min-width: 0; }
+    .booking-name { font-size: 14px; font-weight: 500; color: var(--text-primary); margin-bottom: 3px; }
+    .booking-detail { font-size: 12px; color: var(--text-secondary); }
+    .del-btn {
+      background: none; border: none; cursor: pointer;
+      color: var(--text-tertiary); font-size: 16px; padding: 4px;
+      border-radius: 4px;
+    }
+    .del-btn:hover { color: #E24B4A; background: #FCEBEB; }
+
+    /* Badge */
+    .badge {
+      display: inline-block; font-size: 11px; padding: 2px 8px;
+      border-radius: var(--radius-sm); font-weight: 500;
+    }
+    .badge-blue { background: #E6F1FB; color: #0C447C; }
+    .badge-gray { background: var(--bg-secondary); color: var(--text-secondary); }
+    .badge-green { background: #EAF3DE; color: #27500A; }
+    .badge-amber { background: #FAEEDA; color: #633806; }
+    .badge-teal { background: #E1F5EE; color: #085041; }
+
+    /* Empty */
+    .empty { text-align: center; padding: 2rem; color: var(--text-tertiary); font-size: 14px; }
+
+    /* Team grid */
+    .team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px,1fr)); gap: 10px; }
+    .team-card {
+      background: var(--bg); border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg); padding: 1rem;
+      display: flex; align-items: center; gap: 10px;
+      box-shadow: var(--shadow);
+    }
+    .team-avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 600; flex-shrink: 0;
+    }
+    .team-name { font-size: 13px; font-weight: 500; color: var(--text-primary); margin-bottom: 2px; }
+    .team-role { font-size: 11px; margin: 0; }
+    .team-count { font-size: 11px; color: var(--text-tertiary); margin-top: 2px; }
+
+    /* Calendar */
+    .cal-wrap { overflow-x: auto; }
+    .cal-table { width: 100%; border-collapse: collapse; min-width: 560px; }
+    .cal-table th {
+      font-size: 12px; font-weight: 500; color: var(--text-secondary);
+      padding: 8px 6px; text-align: center;
+      border-bottom: 0.5px solid var(--border); white-space: nowrap;
+    }
+    .cal-table th.time-col { text-align: left; width: 52px; color: var(--text-tertiary); }
+    .cal-table td { padding: 3px 4px; vertical-align: top; border-bottom: 0.5px solid var(--border-light); }
+    .cal-table td.time-cell {
+      font-size: 11px; color: var(--text-tertiary);
+      padding: 3px 8px 3px 0; white-space: nowrap; vertical-align: middle;
+    }
+    .cal-cell {
+      border-radius: 5px; padding: 4px 6px; font-size: 11px;
+      line-height: 1.35; min-height: 36px;
+    }
+    .cal-cell.free-all { background: #E1F5EE; color: #085041; }
+    .cal-cell.partial { background: #FAEEDA; color: #633806; }
+    .cal-cell.full { background: var(--bg-secondary); color: var(--text-tertiary); }
+    .cal-cell.empty-day { background: transparent; }
+    .cal-booking { font-size: 10px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: 0.85; }
+
+    .cal-legend { display: flex; gap: 16px; flex-wrap: wrap; }
+    .cal-legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-secondary); }
+    .cal-legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+
+    .cal-space-tabs { display: flex; gap: 6px; margin-bottom: 1rem; flex-wrap: wrap; }
+    .cal-space-tab {
+      padding: 5px 12px; border: 0.5px solid var(--border);
+      border-radius: var(--radius-md); font-size: 12px; cursor: pointer;
+      color: var(--text-secondary); background: var(--bg);
+      font-family: var(--font-sans);
+    }
+    .cal-space-tab.active { background: var(--bg-secondary); color: var(--text-primary); border-color: #aaa; font-weight: 500; }
+
+    .loading-bar { text-align: center; padding: 1.5rem; font-size: 13px; color: var(--text-tertiary); }
+
+    /* Role group labels */
+    .role-group-label {
+      font-size: 11px; font-weight: 500; color: var(--text-tertiary);
+      margin: 10px 0 4px; text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    .role-group-label:first-child { margin-top: 0; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="header-brand">
+      <div class="header-logo"><span>T</span></div>
+      <div>
+        <div class="header-title">InnoTrans 2026</div>
+        <div class="header-sub">Meeting Scheduler · Messe Berlin · 22–25 Sep</div>
+      </div>
+    </div>
+    <span class="notion-pill">
+      <i class="ti ti-brand-notion" style="font-size:13px;"></i> Synced with Notion
+    </span>
+  </div>
+</header>
+
+<main>
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('book',event)"><i class="ti ti-calendar-plus"></i> Book a meeting</button>
+    <button class="tab" onclick="switchTab('calendar',event)"><i class="ti ti-layout-grid"></i> Calendar view</button>
+    <button class="tab" onclick="switchTab('list',event)"><i class="ti ti-list"></i> All bookings</button>
+    <button class="tab" onclick="switchTab('team',event)"><i class="ti ti-users"></i> Rail team</button>
+  </div>
+
+  <!-- BOOK -->
+  <div id="view-book" class="view active">
+    <div id="success-msg" class="success-msg"></div>
+    <div id="error-msg" class="error-msg"></div>
+
+    <div class="card">
+      <p class="section-label">Select day</p>
+      <div class="day-tabs">
+        <button class="day-tab active" onclick="selectDay(this,'Tue 22 Sep')">Tue 22 Sep</button>
+        <button class="day-tab" onclick="selectDay(this,'Wed 23 Sep')">Wed 23 Sep</button>
+        <button class="day-tab" onclick="selectDay(this,'Thu 24 Sep')">Thu 24 Sep</button>
+        <button class="day-tab" onclick="selectDay(this,'Fri 25 Sep')">Fri 25 Sep</button>
+      </div>
+      <p class="section-label" style="margin-top:1.25rem;">Select time slot</p>
+      <div class="space-legend">
+        <span class="legend-item"><span class="legend-dot" style="background:#85B7EB;"></span> Private available</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#5DCAA5;"></span> Informal available</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#EF9F27;"></span> Partially booked</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#d0cfcb;"></span> Fully booked</span>
+      </div>
+      <div class="slot-grid" id="slot-grid">
+        <div class="loading-bar" style="grid-column:1/-1;">Loading availability…</div>
+      </div>
+    </div>
+
+    <div class="card" id="space-card" style="display:none;">
+      <p class="section-label">Select a space</p>
+      <div class="space-pills" id="space-pills"></div>
+    </div>
+
+    <div class="card">
+      <div class="field"><label>Visitor name *</label><input type="text" id="f-name" placeholder="e.g. Anna Müller"></div>
+      <div class="field"><label>Company *</label><input type="text" id="f-company" placeholder="e.g. Deutsche Bahn"></div>
+      <div class="field">
+        <label>Topic / meeting type</label>
+        <select id="f-topic">
+          <option value="">Select a topic…</option>
+          <option>Product demo</option><option>Partnership discussion</option>
+          <option>Technical briefing</option><option>Commercial negotiation</option>
+          <option>Press interview</option><option>General networking</option><option>Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Number of attendees</label>
+        <select id="f-attendees">
+          <option value="1">1 person</option><option value="2">2 people</option>
+          <option value="3">3 people</option><option value="4">4 people</option><option value="5+">5+ people</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Rail team attendees <span style="color:var(--text-tertiary);font-weight:400;">(select one or more)</span></label>
+        <div id="selected-hosts-row" class="selected-hosts-row"></div>
+        <div style="margin-top:8px;">
+          <p class="role-group-label">Sales</p>
+          <div class="host-pills" id="host-pills-sales"></div>
+          <p class="role-group-label">Engineering</p>
+          <div class="host-pills" id="host-pills-engineering"></div>
+          <p class="role-group-label">Other</p>
+          <div class="host-pills" id="host-pills-other"></div>
+        </div>
+      </div>
+      <div class="field"><label>Notes (optional)</label><textarea id="f-notes" rows="2" placeholder="Any specific requirements…"></textarea></div>
+      <button class="btn-primary" id="book-btn" onclick="bookMeeting()">
+        <i class="ti ti-check"></i> Confirm booking
+      </button>
+    </div>
+  </div>
+
+  <!-- CALENDAR -->
+  <div id="view-calendar" class="view">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:8px;">
+        <div class="cal-legend">
+          <span class="cal-legend-item"><span class="cal-legend-dot" style="background:#E1F5EE;border:0.5px solid #5DCAA5;"></span> All free</span>
+          <span class="cal-legend-item"><span class="cal-legend-dot" style="background:#FAEEDA;border:0.5px solid #EF9F27;"></span> Partial</span>
+          <span class="cal-legend-item"><span class="cal-legend-dot" style="background:#f0efec;border:0.5px solid #d0cfcb;"></span> Full</span>
+        </div>
+        <button class="btn-outline" onclick="loadBookings()"><i class="ti ti-refresh"></i> Refresh</button>
+      </div>
+      <p class="section-label">Filter by space</p>
+      <div class="cal-space-tabs">
+        <button class="cal-space-tab active" onclick="selectCalSpace(this,'all')">All spaces</button>
+        <button class="cal-space-tab" onclick="selectCalSpace(this,'Private room A')"><i class="ti ti-lock" style="font-size:12px;vertical-align:-1px;margin-right:3px;"></i>Private A</button>
+        <button class="cal-space-tab" onclick="selectCalSpace(this,'Private room B')"><i class="ti ti-lock" style="font-size:12px;vertical-align:-1px;margin-right:3px;"></i>Private B</button>
+        <button class="cal-space-tab" onclick="selectCalSpace(this,'Informal space 1')"><i class="ti ti-armchair" style="font-size:12px;vertical-align:-1px;margin-right:3px;"></i>Informal 1</button>
+        <button class="cal-space-tab" onclick="selectCalSpace(this,'Informal space 2')"><i class="ti ti-armchair" style="font-size:12px;vertical-align:-1px;margin-right:3px;"></i>Informal 2</button>
+        <button class="cal-space-tab" onclick="selectCalSpace(this,'Informal space 3')"><i class="ti ti-armchair" style="font-size:12px;vertical-align:-1px;margin-right:3px;"></i>Informal 3</button>
+      </div>
+      <div class="cal-wrap">
+        <table class="cal-table" id="cal-table"></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- LIST -->
+  <div id="view-list" class="view">
+    <div class="stats">
+      <div class="stat"><div class="stat-label">Total booked</div><div class="stat-val" id="stat-total">0</div></div>
+      <div class="stat"><div class="stat-label">Private rooms</div><div class="stat-val" id="stat-private">0</div></div>
+      <div class="stat"><div class="stat-label">Informal spaces</div><div class="stat-val" id="stat-informal">0</div></div>
+      <div class="stat"><div class="stat-label">Total attendees</div><div class="stat-val" id="stat-attendees">0</div></div>
+    </div>
+    <div class="filter-row">
+      <select id="filter-day" onchange="renderList()">
+        <option value="">All days</option>
+        <option>Tue 22 Sep</option><option>Wed 23 Sep</option><option>Thu 24 Sep</option><option>Fri 25 Sep</option>
+      </select>
+      <select id="filter-space-type" onchange="renderList()">
+        <option value="">All spaces</option>
+        <option value="private">Private rooms</option><option value="informal">Informal spaces</option>
+      </select>
+      <select id="filter-host" onchange="renderList()"><option value="">All hosts</option></select>
+      <select id="filter-topic" onchange="renderList()">
+        <option value="">All topics</option>
+        <option>Product demo</option><option>Partnership discussion</option><option>Technical briefing</option>
+        <option>Commercial negotiation</option><option>Press interview</option><option>General networking</option><option>Other</option>
+      </select>
+      <button class="btn-outline" onclick="loadBookings()"><i class="ti ti-refresh"></i> Sync</button>
+      <button class="btn-outline" onclick="exportCSV()"><i class="ti ti-download"></i> CSV</button>
+    </div>
+    <div class="card">
+      <div class="empty" id="empty-state">
+        <i class="ti ti-calendar-off" style="font-size:28px;display:block;margin-bottom:8px;"></i>No bookings yet
+      </div>
+      <div id="booking-list"></div>
+    </div>
+  </div>
+
+  <!-- TEAM -->
+  <div id="view-team" class="view">
+    <div class="stats" style="grid-template-columns:repeat(3,1fr);margin-bottom:1rem;">
+      <div class="stat"><div class="stat-label">Team members</div><div class="stat-val">21</div></div>
+      <div class="stat"><div class="stat-label">Hosting meetings</div><div class="stat-val" id="stat-hosts">0</div></div>
+      <div class="stat"><div class="stat-label">Avg per host</div><div class="stat-val" id="stat-avg">0</div></div>
+    </div>
+    <div class="team-grid" id="team-grid"></div>
+  </div>
+</main>
+
+<script>
+// ── CONFIG ──────────────────────────────────────────────────────────────
+const NOTION_DB = 'c837a2318b2040ad86327f553eaf6ec0'; // Notion database ID
+
+// ── TEAM DATA ───────────────────────────────────────────────────────────
+const TEAM = [
+  {first:'Arsalan',   last:'Bagheri',       role:'Sales'},
+  {first:'Elion',     last:'Pogaj',          role:'Sales'},
+  {first:'Jörg',      last:'Spreckels',      role:'Engineering'},
+  {first:'Kim',       last:'Lindholm',       role:'Sales'},
+  {first:'Stefan',    last:'Hülsiggensen',   role:'Sales'},
+  {first:'Patrick',   last:'Zenker',         role:'Engineering'},
+  {first:'Rüdiger',   last:'Hack',           role:'Engineering'},
+  {first:'Sascha',    last:'Ungewiss',       role:'Sales'},
+  {first:'Tobias',    last:'Denner',         role:'Sales'},
+  {first:'Jim',       last:'Weaver',         role:'Sales'},
+  {first:'Klaua',     last:'Ulf',            role:'Sales'},
+  {first:'Corinna',   last:'Gall',           role:'Internal'},
+  {first:'Lutz',      last:'Claudia',        role:'Sales'},
+  {first:'Conrad',    last:'Hextall',        role:'Engineering'},
+  {first:'Samuele',   last:'Vona',           role:'Sales'},
+  {first:'Antoine',   last:'Charrier',       role:'Sales'},
+  {first:'Jean-François', last:'Mabile',     role:'GM'},
+  {first:'Ranadip',   last:'Basu',           role:'Sales'},
+  {first:'Mallikarjun',last:'Uppu',          role:'Engineering'},
+  {first:'Sudeep',    last:'Mukherjee',      role:'Sales'},
+  {first:'Nathan',    last:'Lipkewycz',      role:'Sales'}
+];
+
+const RC = {
+  Sales:       {bg:'#E6F1FB', color:'#0C447C', border:'#85B7EB'},
+  Engineering: {bg:'#EAF3DE', color:'#27500A', border:'#97C459'},
+  Internal:    {bg:'#EEEDFE', color:'#3C3489', border:'#AFA9EC'},
+  GM:          {bg:'#FAEEDA', color:'#633806', border:'#EF9F27'},
+  ID:          {bg:'#E1F5EE', color:'#085041', border:'#5DCAA5'},
+  Other:       {bg:'#F1EFE8', color:'#444441', border:'#B4B2A9'}
+};
+
+const DAYS = ['Tue 22 Sep','Wed 23 Sep','Thu 24 Sep','Fri 25 Sep'];
+const SPACES = {
+  private:  ['Private room A','Private room B'],
+  informal: ['Informal space 1','Informal space 2','Informal space 3']
+};
+const ALL_SPACES = [...SPACES.private, ...SPACES.informal];
+const ALL_TIMES  = ['09:00','09:30','10:00','10:30','11:00','11:30','12:00','12:30',
+                    '13:00','13:30','14:00','14:30','15:00','15:30','16:00','16:30'];
+const FRI_TIMES  = ALL_TIMES.filter(t => t <= '15:30');
+
+function getTimesForDay(d) { return d === 'Fri 25 Sep' ? FRI_TIMES : ALL_TIMES; }
+function fullName(m)  { return m.last ? `${m.first} ${m.last}` : m.first; }
+function initials(m)  { return m.last ? (m.first[0]+m.last[0]).toUpperCase() : m.first.slice(0,2).toUpperCase(); }
+function roleLabel(r) { return r==='ID'?'I & D': r==='Internal'?'Internal sales': r; }
+function spaceType(s) { return SPACES.private.includes(s) ? 'private' : 'informal'; }
+function getInitialsStr(n) { const p=n.trim().split(' '); return p.length>1?(p[0][0]+p[p.length-1][0]).toUpperCase():n.slice(0,2).toUpperCase(); }
+
+// ── STATE ───────────────────────────────────────────────────────────────
+let currentDay    = 'Tue 22 Sep';
+let selectedSlot  = null;
+let selectedSpace = null;
+let selectedHosts = [];
+let calSpace      = 'all';
+let bookings      = [];
+
+// ── NOTION API (via Cloudflare proxy — token lives server-side) ──────────
+function richText(str) {
+  return [{ type: 'text', text: { content: str || '' } }];
+}
+
+async function notionProxy(path, method, body) {
+  const res = await fetch('/api/notion', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ path, method, body })
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Proxy error ${res.status}: ${err}`);
+  }
+  return res.json();
+}
+
+async function loadBookings() {
+  document.getElementById('slot-grid').innerHTML = '<div class="loading-bar" style="grid-column:1/-1;">Syncing with Notion…</div>';
+  try {
+    let allPages = [], cursor = undefined;
+    do {
+      const reqBody = { page_size: 100 };
+      if (cursor) reqBody.start_cursor = cursor;
+      const data = await notionProxy(`/v1/databases/${NOTION_DB}/query`, 'POST', reqBody);
+      allPages = allPages.concat(data.results);
+      cursor = data.has_more ? data.next_cursor : undefined;
+    } while (cursor);
+
+    bookings = allPages.map(page => {
+      const p = page.properties;
+      const getProp = (name, fallback='') => {
+        const prop = p[name];
+        if (!prop) return fallback;
+        if (prop.type==='title')     return prop.title.map(t=>t.plain_text).join('') || fallback;
+        if (prop.type==='rich_text') return prop.rich_text.map(t=>t.plain_text).join('') || fallback;
+        if (prop.type==='number')    return prop.number ?? fallback;
+        if (prop.type==='select')    return prop.select?.name || fallback;
+        return fallback;
+      };
+      return {
+        pageId:      page.id,
+        visitorName: getProp('Visitor name') || getProp('Name'),
+        company:     getProp('Company'),
+        day:         getProp('Day'),
+        time:        getProp('Time'),
+        space:       getProp('Space'),
+        spaceType:   getProp('Space type'),
+        topic:       getProp('Topic'),
+        attendees:   getProp('Attendees', 1),
+        railTeam:    getProp('Rail team'),
+        notes:       getProp('Notes')
+      };
+    });
+  } catch(e) {
+    console.error('loadBookings error:', e);
+    showError(`Could not load from Notion: ${e.message}`);
+    bookings = [];
+  }
+  renderSlots();
+  renderSpacePills();
+  updateStats();
+  if (document.getElementById('view-list').classList.contains('active'))     renderList();
+  if (document.getElementById('view-calendar').classList.contains('active')) renderCalendar();
+  if (document.getElementById('view-team').classList.contains('active'))     renderTeam();
+}
+
+async function saveToNotion(b) {
+  const btn = document.getElementById('book-btn');
+  btn.disabled = true; btn.textContent = 'Saving to Notion…';
+  try {
+    const data = await notionProxy('/v1/pages', 'POST', {
+      parent: { database_id: NOTION_DB },
+      properties: {
+        'Visitor name': { title: richText(b.name) },
+        'Company':      { rich_text: richText(b.company) },
+        'Day':          { rich_text: richText(b.day) },
+        'Time':         { rich_text: richText(b.time) },
+        'Space':        { rich_text: richText(b.space) },
+        'Space type':   { rich_text: richText(b.spaceType) },
+        'Topic':        { rich_text: richText(b.topic||'') },
+        'Attendees':    { number: parseInt(b.attendees)||1 },
+        'Rail team':    { rich_text: richText(b.hosts.join(', ')) },
+        'Notes':        { rich_text: richText(b.notes||'') }
+      }
+    });
+    b.pageId = data.id;
+    return true;
+  } catch(e) {
+    console.error('saveToNotion error:', e);
+    showError(`Save failed: ${e.message}`);
+    return false;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ti ti-check"></i> Confirm booking';
+  }
+}
+
+async function deleteFromNotion(pageId) {
+  if (!pageId) return true;
+  try {
+    await notionProxy(`/v1/pages/${pageId}`, 'PATCH', { archived: true });
+    return true;
+  } catch(e) {
+    console.error('deleteFromNotion error:', e);
+    return false;
+  }
+}
+
+// ── HELPERS ─────────────────────────────────────────────────────────────
+function getBookingsAt(day, time) { return bookings.filter(b => b.day===day && b.time===time); }
+function isFree(day, time, space) { return !bookings.some(b => b.day===day && b.time===time && b.space===space); }
+
+function showMsg(type, html) {
+  const el = document.getElementById(type+'-msg');
+  el.style.display = 'block'; el.innerHTML = html;
+  setTimeout(() => el.style.display='none', 6000);
+}
+function showError(msg) { showMsg('error', `<i class="ti ti-alert-circle"></i> ${msg}`); }
+
+function topicBadge(t) {
+  const m = {'Product demo':'badge-blue','Partnership discussion':'badge-green',
+    'Technical briefing':'badge-gray','Commercial negotiation':'badge-amber',
+    'Press interview':'badge-amber','General networking':'badge-teal','Other':'badge-gray'};
+  return m[t] || 'badge-gray';
+}
+
+// ── RENDER: SLOTS ────────────────────────────────────────────────────────
+function renderSlots() {
+  const grid  = document.getElementById('slot-grid');
+  const times = getTimesForDay(currentDay);
+  grid.innerHTML = times.map(t => {
+    const bkgs   = getBookingsAt(currentDay, t);
+    const taken  = bkgs.map(b => b.space);
+    const freeP  = SPACES.private.filter(s => !taken.includes(s)).length;
+    const freeI  = SPACES.informal.filter(s => !taken.includes(s)).length;
+    const total  = freeP + freeI;
+    const isSel  = selectedSlot === t;
+    let cls = 'slot';
+    if (total === 0)          cls += ' fully-taken';
+    else if (bkgs.length > 0) cls += ' partial';
+    if (isSel && total > 0)   cls += ' selected';
+    const avail = total === 0
+      ? '<div class="slot-avail">Full</div>'
+      : `<div class="slot-avail">${[freeP>0?freeP+'P':'',freeI>0?freeI+'I':''].filter(Boolean).join(' · ')}</div>`;
+    return `<button class="${cls}" onclick="selectSlot('${t}')" ${total===0?'disabled':''}>${t}${avail}</button>`;
+  }).join('');
+}
+
+// ── RENDER: SPACE PILLS ──────────────────────────────────────────────────
+function renderSpacePills() {
+  const card  = document.getElementById('space-card');
+  const pills = document.getElementById('space-pills');
+  if (!selectedSlot) { card.style.display='none'; return; }
+  card.style.display = 'block';
+  pills.innerHTML = ALL_SPACES.map(s => {
+    const free = isFree(currentDay, selectedSlot, s);
+    const type = spaceType(s);
+    const sel  = selectedSpace===s ? (type==='private'?' selected-private':' selected-informal') : '';
+    const icon = type==='private' ? 'ti-lock' : 'ti-armchair';
+    return `<button class="space-pill${sel}${!free?' disabled':''}" onclick="selectSpace('${s}')" ${!free?'disabled':''}>
+      <i class="ti ${icon}" style="font-size:14px;vertical-align:-1px;margin-right:4px;"></i>${s}</button>`;
+  }).join('');
+}
+
+// ── RENDER: CALENDAR ─────────────────────────────────────────────────────
+function renderCalendar() {
+  const tbl    = document.getElementById('cal-table');
+  const spaces = calSpace==='all' ? ALL_SPACES : [calSpace];
+  const total  = spaces.length;
+  let html = '<thead><tr><th class="time-col">Time</th>';
+  DAYS.forEach(d => html += `<th>${d}</th>`);
+  html += '</tr></thead><tbody>';
+  ALL_TIMES.forEach(t => {
+    html += `<tr><td class="time-cell">${t}</td>`;
+    DAYS.forEach(day => {
+      const isFri = day==='Fri 25 Sep';
+      if (isFri && !FRI_TIMES.includes(t)) {
+        html += `<td><div class="cal-cell empty-day" style="font-size:10px;text-align:center;padding-top:10px;color:#aaa;">—</div></td>`;
+        return;
+      }
+      const bkgsHere = bookings.filter(b => b.day===day && b.time===t && spaces.includes(b.space));
+      const takenSp  = bkgsHere.map(b => b.space);
+      const freeCount = spaces.filter(s => !takenSp.includes(s)).length;
+      let cls='cal-cell', label='';
+      if (freeCount===total)  { cls+=' free-all'; label=total===1?'Available':`${freeCount} of ${total} free`; }
+      else if (freeCount===0) { cls+=' full'; label='Fully booked'; }
+      else                    { cls+=' partial'; label=`${freeCount} of ${total} free`; }
+      const names = bkgsHere.map(b =>
+        `<div class="cal-booking">${b.visitorName||b.name||''}${calSpace==='all'?' · '+b.space.replace('Private room','Priv').replace('Informal space','Inf'):''}</div>`
+      ).join('');
+      html += `<td><div class="${cls}">${label}${names}</div></td>`;
+    });
+    html += '</tr>';
+  });
+  tbl.innerHTML = html + '</tbody>';
+}
+
+// ── RENDER: HOST PILLS ───────────────────────────────────────────────────
+function renderHostPills() {
+  const groups = {
+    sales:       TEAM.filter(m => ['Sales','Internal','GM'].includes(m.role)),
+    engineering: TEAM.filter(m => m.role==='Engineering'),
+    other:       TEAM.filter(m => ['ID','Other'].includes(m.role))
+  };
+  ['sales','engineering','other'].forEach(g => {
+    const el = document.getElementById(`host-pills-${g}`);
+    if (!el) return;
+    el.innerHTML = groups[g].map(m => {
+      const name  = fullName(m);
+      const rc    = RC[m.role] || RC.Other;
+      const isSel = selectedHosts.includes(name);
+      return `<button class="host-pill" onclick="toggleHost('${name.replace(/'/g,"\\'")}')"
+        style="${isSel?`background:${rc.bg};border-color:${rc.border};color:${rc.color};font-weight:500;`:''}"
+      >${m.first} ${m.last?m.last[0]+'.':''}</button>`;
+    }).join('');
+  });
+  renderSelectedTags();
+}
+
+function renderSelectedTags() {
+  const row = document.getElementById('selected-hosts-row');
+  if (!selectedHosts.length) {
+    row.innerHTML='<span style="font-size:12px;color:#aaa;">None selected</span>'; return;
+  }
+  row.innerHTML = selectedHosts.map(name => {
+    const m  = TEAM.find(x => fullName(x)===name);
+    const rc = m ? (RC[m.role]||RC.Other) : RC.Other;
+    return `<span class="selected-host-tag" style="background:${rc.bg};color:${rc.color};border:0.5px solid ${rc.border};">
+      ${name}<button onclick="toggleHost('${name.replace(/'/g,"\\'")}')" aria-label="Remove ${name}">×</button>
+    </span>`;
+  }).join('');
+}
+
+function toggleHost(name) {
+  const idx = selectedHosts.indexOf(name);
+  if (idx>-1) selectedHosts.splice(idx,1); else selectedHosts.push(name);
+  renderHostPills();
+}
+
+function populateHostFilter() {
+  const sel = document.getElementById('filter-host');
+  TEAM.forEach(m => {
+    const o = document.createElement('option');
+    o.value = o.textContent = fullName(m);
+    sel.appendChild(o);
+  });
+}
+
+// ── ACTIONS ──────────────────────────────────────────────────────────────
+function selectDay(el, day) {
+  document.querySelectorAll('.day-tab').forEach(d => d.classList.remove('active'));
+  el.classList.add('active');
+  currentDay=day; selectedSlot=null; selectedSpace=null;
+  renderSlots(); renderSpacePills();
+}
+
+function selectSlot(time) {
+  const taken = getBookingsAt(currentDay, time).map(b => b.space);
+  if (ALL_SPACES.filter(s => !taken.includes(s)).length===0) return;
+  selectedSlot=time; selectedSpace=null;
+  renderSlots(); renderSpacePills();
+}
+
+function selectSpace(space) {
+  if (!isFree(currentDay, selectedSlot, space)) return;
+  selectedSpace=space; renderSpacePills();
+}
+
+function selectCalSpace(el, space) {
+  document.querySelectorAll('.cal-space-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  calSpace=space; renderCalendar();
+}
+
+async function bookMeeting() {
+  const name     = document.getElementById('f-name').value.trim();
+  const company  = document.getElementById('f-company').value.trim();
+  const topic    = document.getElementById('f-topic').value;
+  const attendees= document.getElementById('f-attendees').value;
+  const notes    = document.getElementById('f-notes').value.trim();
+  if (!name)          { alert('Please enter a visitor name.'); return; }
+  if (!company)       { alert('Please enter a company.'); return; }
+  if (!selectedSlot)  { alert('Please select a time slot.'); return; }
+  if (!selectedSpace) { alert('Please select a meeting space.'); return; }
+
+  const booking = { name, company, day:currentDay, time:selectedSlot, space:selectedSpace,
+    spaceType:spaceType(selectedSpace), topic, attendees, notes, hosts:[...selectedHosts] };
+  const ok = await saveToNotion(booking);
+  if (!ok) { showError('Failed to save to Notion. Please try again.'); return; }
+
+  bookings.push({...booking, visitorName:name});
+  document.getElementById('f-name').value=''; document.getElementById('f-company').value='';
+  document.getElementById('f-topic').value=''; document.getElementById('f-attendees').value='1';
+  document.getElementById('f-notes').value='';
+  selectedSlot=null; selectedSpace=null; selectedHosts=[];
+  renderSlots(); renderSpacePills(); renderHostPills(); updateStats();
+  showMsg('success', `<i class="ti ti-circle-check"></i> <strong>${name}</strong> saved to Notion — ${booking.space} on ${booking.day} at ${booking.time}${booking.hosts.length?' · Team: '+booking.hosts.join(', '):''}`)
+}
+
+async function deleteBooking(pageId, idx) {
+  if (!confirm('Delete this booking from Notion?')) return;
+  const ok = await deleteFromNotion(pageId);
+  if (ok) { bookings.splice(idx,1); renderList(); renderSlots(); updateStats(); renderTeam(); }
+  else showError('Could not delete. Please try again.');
+}
+
+// ── RENDER: LIST ─────────────────────────────────────────────────────────
+function renderList() {
+  const dayF   = document.getElementById('filter-day').value;
+  const spaceF = document.getElementById('filter-space-type').value;
+  const hostF  = document.getElementById('filter-host').value;
+  const topicF = document.getElementById('filter-topic').value;
+  const filtered = bookings
+    .map((b,i) => ({...b,_idx:i}))
+    .filter(b =>
+      (!dayF   || b.day===dayF) &&
+      (!spaceF || b.spaceType===spaceF) &&
+      (!hostF  || (b.railTeam||'').includes(hostF)) &&
+      (!topicF || b.topic===topicF)
+    )
+    .sort((a,b) => {
+      const d = DAYS.indexOf(a.day)-DAYS.indexOf(b.day);
+      return d!==0 ? d : a.time.localeCompare(b.time);
+    });
+
+  const list  = document.getElementById('booking-list');
+  const empty = document.getElementById('empty-state');
+  if (!filtered.length) { list.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display = 'none';
+
+  list.innerHTML = filtered.map(b => {
+    const isPriv  = b.spaceType==='private';
+    const visName = b.visitorName||b.name||'—';
+    const hostsArr = Array.isArray(b.hosts) ? b.hosts : (b.railTeam||'').split(',').map(h=>h.trim()).filter(Boolean);
+    const hostTags = hostsArr.map(h => {
+      const m  = TEAM.find(x => fullName(x)===h.trim());
+      const rc = m ? (RC[m.role]||RC.Other) : RC.Other;
+      return `<span style="display:inline-block;font-size:10px;padding:1px 7px;border-radius:10px;background:${rc.bg};color:${rc.color};border:0.5px solid ${rc.border};margin-right:3px;">${h}</span>`;
+    }).join('');
+    return `<div class="booking-row">
+      <div class="booking-avatar${isPriv?'':' informal'}">${getInitialsStr(visName)}</div>
+      <div class="booking-meta">
+        <div class="booking-name">${visName}
+          <span style="font-weight:400;color:#888;font-size:13px;">· ${b.company||''}</span>
+        </div>
+        <div class="booking-detail">
+          <i class="ti ti-calendar" style="font-size:12px;vertical-align:-1px;"></i> ${b.day} &nbsp;
+          <i class="ti ti-clock" style="font-size:12px;vertical-align:-1px;"></i> ${b.time} &nbsp;
+          <i class="ti ${isPriv?'ti-lock':'ti-armchair'}" style="font-size:12px;vertical-align:-1px;"></i>
+          <span class="badge ${isPriv?'badge-blue':'badge-teal'}">${b.space}</span>
+          ${b.topic?`&nbsp;<span class="badge ${topicBadge(b.topic)}">${b.topic}</span>`:''}
+        </div>
+        ${hostsArr.length?`<div class="booking-detail" style="margin-top:4px;"><i class="ti ti-users" style="font-size:12px;vertical-align:-1px;"></i> ${hostTags}</div>`:''}
+        ${b.notes?`<div class="booking-detail" style="margin-top:2px;font-style:italic;">"${b.notes}"</div>`:''}
+      </div>
+      <button class="del-btn" onclick="deleteBooking('${b.pageId||''}',${b._idx})" aria-label="Delete">
+        <i class="ti ti-trash"></i>
+      </button>
+    </div>`;
+  }).join('');
+}
+
+// ── RENDER: TEAM ─────────────────────────────────────────────────────────
+function renderTeam() {
+  const grid = document.getElementById('team-grid');
+  const hostCounts = {};
+  bookings.forEach(b => {
+    const hosts = Array.isArray(b.hosts) ? b.hosts : (b.railTeam||'').split(',').map(h=>h.trim()).filter(Boolean);
+    hosts.forEach(h => { if(h) hostCounts[h]=(hostCounts[h]||0)+1; });
+  });
+  const hosting = Object.keys(hostCounts).length;
+  document.getElementById('stat-hosts').textContent = hosting;
+  document.getElementById('stat-avg').textContent   = hosting>0 ? (bookings.length/hosting).toFixed(1) : '0';
+  grid.innerHTML = TEAM.map(m => {
+    const name  = fullName(m);
+    const rc    = RC[m.role]||RC.Other;
+    const count = hostCounts[name]||0;
+    return `<div class="team-card">
+      <div class="team-avatar" style="background:${rc.bg};color:${rc.color};">${initials(m)}</div>
+      <div>
+        <div class="team-name">${name}</div>
+        <div class="team-role" style="color:${rc.color};">${roleLabel(m.role)}</div>
+        <div class="team-count">${count} meeting${count!==1?'s':''} assigned</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── STATS ────────────────────────────────────────────────────────────────
+function updateStats() {
+  document.getElementById('stat-total').textContent     = bookings.length;
+  document.getElementById('stat-private').textContent   = bookings.filter(b=>b.spaceType==='private').length;
+  document.getElementById('stat-informal').textContent  = bookings.filter(b=>b.spaceType==='informal').length;
+  document.getElementById('stat-attendees').textContent = bookings.reduce((s,b)=>s+(parseInt(b.attendees)||1),0);
+  renderTeam();
+}
+
+// ── TAB SWITCH ───────────────────────────────────────────────────────────
+function switchTab(name, e) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  e.target.closest('.tab').classList.add('active');
+  document.getElementById('view-'+name).classList.add('active');
+  if (name==='list')     { renderList(); updateStats(); }
+  if (name==='book')     { renderSlots(); renderSpacePills(); }
+  if (name==='team')     { renderTeam(); }
+  if (name==='calendar') { renderCalendar(); }
+}
+
+// ── EXPORT CSV ───────────────────────────────────────────────────────────
+function exportCSV() {
+  if (!bookings.length) { alert('No bookings to export yet.'); return; }
+  const headers = ['Day','Time','Space','Space type','Visitor name','Company','Topic','Attendees','Rail team','Notes'];
+  const rows = bookings.map(b => {
+    const hosts = Array.isArray(b.hosts) ? b.hosts.join('; ') : (b.railTeam||'');
+    return [b.day,b.time,b.space,b.spaceType,b.visitorName||b.name,b.company,b.topic,b.attendees,hosts,b.notes]
+      .map(v => `"${(v||'').replace(/"/g,'""')}"`);
+  });
+  const csv  = [headers,...rows].map(r=>r.join(',')).join('\n');
+  const blob = new Blob([csv],{type:'text/csv'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href=url; a.download='InnoTrans2026_meetings.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────
+renderHostPills();
+populateHostFilter();
+loadBookings();
+</script>
+</body>
+</html>
