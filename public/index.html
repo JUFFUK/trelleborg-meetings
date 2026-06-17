@@ -710,12 +710,12 @@ async function saveToNotion(b) {
       properties: {
         'Visitor name': { title: richText(b.name) },
         'Company':      { rich_text: richText(b.company) },
-        'Day':          { rich_text: richText(b.day) },
+        'Day':          { select: { name: b.day } },
         'Time':         { rich_text: richText(b.time) },
-        'Space':        { rich_text: richText(b.space) },
-        'Space type':   { rich_text: richText(b.spaceType) },
-        'Topic':        { rich_text: richText(b.topic||'') },
-        'Attendees':    { number: parseInt(b.attendees)||1 },
+        'Space':        { select: { name: b.space } },
+        'Space type':   { select: { name: b.spaceType } },
+        'Topic':        { select: { name: b.topic || 'Other' } },
+        'Attendees':    { rich_text: richText(String(parseInt(b.attendees)||1)) },
         'Rail team':    { rich_text: richText(b.hosts.join(', ')) },
         'Notes':        { rich_text: richText(b.notes||'') }
       }
