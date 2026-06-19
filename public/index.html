@@ -747,6 +747,15 @@ async function deleteFromNotion(pageId) {
 function getBookingsAt(day, time) { return bookings.filter(b => b.day===day && b.time===time); }
 function isFree(day, time, space) { return !bookings.some(b => b.day===day && b.time===time && b.space===space); }
 
+function busyHostsAt(day, time) {
+  const busy = new Set();
+  getBookingsAt(day, time).forEach(b => {
+    const hosts = Array.isArray(b.hosts) ? b.hosts : (b.railTeam||'').split(',').map(h=>h.trim()).filter(Boolean);
+    hosts.forEach(h => busy.add(h));
+  });
+  return busy;
+}
+
 function showMsg(type, html) {
   const el = document.getElementById(type+'-msg');
   el.style.display = 'block'; el.innerHTML = html;
@@ -839,16 +848,22 @@ function renderHostPills() {
     engineering: TEAM.filter(m => m.role==='Engineering'),
     other:       TEAM.filter(m => ['ID','Other'].includes(m.role))
   };
+  const busy = (selectedSlot) ? busyHostsAt(currentDay, selectedSlot) : new Set();
   ['sales','engineering','other'].forEach(g => {
     const el = document.getElementById(`host-pills-${g}`);
     if (!el) return;
     el.innerHTML = groups[g].map(m => {
-      const name  = fullName(m);
-      const rc    = RC[m.role] || RC.Other;
-      const isSel = selectedHosts.includes(name);
-      return `<button class="host-pill" onclick="toggleHost('${name.replace(/'/g,"\\'")}')"
-        style="${isSel?`background:${rc.bg};border-color:${rc.border};color:${rc.color};font-weight:500;`:''}"
-      >${m.first} ${m.last?m.last[0]+'.':''}</button>`;
+      const name    = fullName(m);
+      const rc      = RC[m.role] || RC.Other;
+      const isSel   = selectedHosts.includes(name);
+      const isBusy  = busy.has(name) && !isSel;
+      const style = isBusy
+        ? 'opacity:0.4;text-decoration:line-through;cursor:not-allowed;background:#f3f3f3;border-color:#ddd;color:#999;'
+        : (isSel ? `background:${rc.bg};border-color:${rc.border};color:${rc.color};font-weight:500;` : '');
+      return `<button class="host-pill" ${isBusy?'disabled title="Already booked in this slot"':''}
+        onclick="${isBusy?'':`toggleHost('${name.replace(/'/g,"\\'")}')`}"
+        style="${style}"
+      >${m.first} ${m.last?m.last[0]+'.':''}${isBusy?' <i class="ti ti-lock" style="font-size:10px;"></i>':''}</button>`;
     }).join('');
   });
   renderSelectedTags();
@@ -870,7 +885,12 @@ function renderSelectedTags() {
 
 function toggleHost(name) {
   const idx = selectedHosts.indexOf(name);
-  if (idx>-1) selectedHosts.splice(idx,1); else selectedHosts.push(name);
+  if (idx>-1) { selectedHosts.splice(idx,1); renderHostPills(); return; }
+  if (selectedSlot) {
+    const busy = busyHostsAt(currentDay, selectedSlot);
+    if (busy.has(name)) { showError(`${name} is already booked in another meeting at this time.`); return; }
+  }
+  selectedHosts.push(name);
   renderHostPills();
 }
 
@@ -895,7 +915,13 @@ function selectSlot(time) {
   const taken = getBookingsAt(currentDay, time).map(b => b.space);
   if (ALL_SPACES.filter(s => !taken.includes(s)).length===0) return;
   selectedSlot=time; selectedSpace=null;
-  renderSlots(); renderSpacePills();
+  const busy = busyHostsAt(currentDay, time);
+  const conflicted = selectedHosts.filter(h => busy.has(h));
+  if (conflicted.length) {
+    selectedHosts = selectedHosts.filter(h => !busy.has(h));
+    showError(`Removed ${conflicted.join(', ')} — already booked at this time.`);
+  }
+  renderSlots(); renderSpacePills(); renderHostPills();
 }
 
 function selectSpace(space) {
@@ -919,6 +945,21 @@ async function bookMeeting() {
   if (!company)       { alert('Please enter a company.'); return; }
   if (!selectedSlot)  { alert('Please select a time slot.'); return; }
   if (!selectedSpace) { alert('Please select a meeting space.'); return; }
+
+  // Final conflict check against current in-memory state before saving
+  const busy = busyHostsAt(currentDay, selectedSlot);
+  const conflicted = selectedHosts.filter(h => busy.has(h));
+  if (conflicted.length) {
+    showError(`Cannot book — ${conflicted.join(', ')} ${conflicted.length>1?'are':'is'} already booked at this time. Please refresh and try again.`);
+    renderHostPills();
+    return;
+  }
+  if (!isFree(currentDay, selectedSlot, selectedSpace)) {
+    showError('This space was just booked by someone else. Please choose another slot.');
+    selectedSpace = null;
+    renderSlots(); renderSpacePills();
+    return;
+  }
 
   const booking = { name, company, day:currentDay, time:selectedSlot, space:selectedSpace,
     spaceType:spaceType(selectedSpace), topic, attendees, notes, hosts:[...selectedHosts] };
