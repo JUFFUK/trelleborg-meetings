@@ -429,6 +429,7 @@
     <button class="tab" onclick="switchTab('calendar',event)"><i class="ti ti-layout-grid"></i> Calendar view</button>
     <button class="tab" onclick="switchTab('list',event)"><i class="ti ti-list"></i> All bookings</button>
     <button class="tab" onclick="switchTab('team',event)"><i class="ti ti-users"></i> Rail team</button>
+    <button class="tab" onclick="switchTab('availability',event)"><i class="ti ti-calendar-off"></i> My availability</button>
   </div>
 
   <!-- BOOK -->
@@ -568,11 +569,60 @@
     </div>
     <div class="team-grid" id="team-grid"></div>
   </div>
+
+  <!-- AVAILABILITY -->
+  <div id="view-availability" class="view">
+    <div id="avail-success-msg" class="success-msg"></div>
+    <div id="avail-error-msg" class="error-msg"></div>
+
+    <div class="card">
+      <p class="section-label">Who are you?</p>
+      <div class="field">
+        <select id="avail-person">
+          <option value="">Select your name…</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="section-label">Mark yourself unavailable</p>
+      <div class="field">
+        <label>Day</label>
+        <select id="avail-day">
+          <option>Tue 22 Sep</option><option>Wed 23 Sep</option>
+          <option>Thu 24 Sep</option><option>Fri 25 Sep</option>
+        </select>
+      </div>
+      <div class="field" style="display:flex;gap:10px;">
+        <div style="flex:1;">
+          <label>From</label>
+          <select id="avail-start"></select>
+        </div>
+        <div style="flex:1;">
+          <label>To</label>
+          <select id="avail-end"></select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Reason (optional)</label>
+        <input type="text" id="avail-reason" placeholder="e.g. Travel, Other meetings">
+      </div>
+      <button class="btn-primary" id="avail-add-btn" onclick="addAvailability()">
+        <i class="ti ti-calendar-off"></i> Mark unavailable
+      </button>
+    </div>
+
+    <div class="card">
+      <p class="section-label">Your unavailable times</p>
+      <div id="avail-list"><div class="loading-bar">Loading…</div></div>
+    </div>
+  </div>
 </main>
 
 <script>
 // ── CONFIG ──────────────────────────────────────────────────────────────
-const NOTION_DB = 'c837a2318b2040ad86327f553eaf6ec0'; // Notion database ID
+const NOTION_DB    = 'c837a2318b2040ad86327f553eaf6ec0';     // Meetings database ID
+const AVAIL_DB      = 'a5bb960db6c546f5af7540f91b3c1e51';    // Availability database ID
 
 // ── TEAM DATA ───────────────────────────────────────────────────────────
 const TEAM = [
@@ -632,6 +682,7 @@ let selectedSpace = null;
 let selectedHosts = [];
 let calSpace      = 'all';
 let bookings      = [];
+let availability  = [];
 
 // ── NOTION API (via Cloudflare proxy — token lives server-side) ──────────
 function richText(str) {
@@ -743,9 +794,93 @@ async function deleteFromNotion(pageId) {
   }
 }
 
+// ── AVAILABILITY API ───────────────────────────────────────────────────
+async function loadAvailability() {
+  try {
+    let allPages = [], cursor = undefined;
+    do {
+      const reqBody = { page_size: 100 };
+      if (cursor) reqBody.start_cursor = cursor;
+      const data = await notionProxy(`/v1/databases/${AVAIL_DB}/query`, 'POST', reqBody);
+      allPages = allPages.concat(data.results);
+      cursor = data.has_more ? data.next_cursor : undefined;
+    } while (cursor);
+
+    availability = allPages.map(page => {
+      const p = page.properties;
+      const getProp = (name, fallback='') => {
+        const prop = p[name];
+        if (!prop) return fallback;
+        if (prop.type==='title')     return prop.title.map(t=>t.plain_text).join('') || fallback;
+        if (prop.type==='rich_text') return prop.rich_text.map(t=>t.plain_text).join('') || fallback;
+        if (prop.type==='select')    return prop.select?.name || fallback;
+        return fallback;
+      };
+      return {
+        pageId:    page.id,
+        person:    getProp('Person'),
+        day:       getProp('Day'),
+        startTime: getProp('Start time'),
+        endTime:   getProp('End time'),
+        reason:    getProp('Reason')
+      };
+    });
+  } catch(e) {
+    console.error('loadAvailability error:', e);
+    availability = [];
+  }
+}
+
+async function saveAvailability(a) {
+  try {
+    const data = await notionProxy('/v1/pages', 'POST', {
+      parent: { database_id: AVAIL_DB },
+      properties: {
+        'Person':     { title: richText(a.person) },
+        'Day':        { select: { name: a.day } },
+        'Start time': { rich_text: richText(a.startTime) },
+        'End time':   { rich_text: richText(a.endTime) },
+        'Reason':     { rich_text: richText(a.reason||'') }
+      }
+    });
+    a.pageId = data.id;
+    return true;
+  } catch(e) {
+    console.error('saveAvailability error:', e);
+    return false;
+  }
+}
+
+async function deleteAvailability(pageId) {
+  if (!pageId) return true;
+  try {
+    await notionProxy(`/v1/pages/${pageId}`, 'PATCH', { archived: true });
+    return true;
+  } catch(e) {
+    console.error('deleteAvailability error:', e);
+    return false;
+  }
+}
+
 // ── HELPERS ─────────────────────────────────────────────────────────────
 function getBookingsAt(day, time) { return bookings.filter(b => b.day===day && b.time===time); }
 function isFree(day, time, space) { return !bookings.some(b => b.day===day && b.time===time && b.space===space); }
+
+function timesOverlap(slotTime, startTime, endTime) {
+  // slotTime is a single HH:MM; treat the slot as a 30-min window [slotTime, slotTime+30)
+  if (!startTime || !endTime) return false;
+  const toMin = t => { const [h,m] = t.split(':').map(Number); return h*60+m; };
+  const slotStart = toMin(slotTime), slotEnd = slotStart + 30;
+  const blockStart = toMin(startTime), blockEnd = toMin(endTime);
+  return slotStart < blockEnd && blockStart < slotEnd;
+}
+
+function unavailableHostsAt(day, time) {
+  const names = new Set();
+  availability.filter(a => a.day===day && timesOverlap(time, a.startTime, a.endTime))
+    .forEach(a => names.add(a.person));
+  return names;
+}
 
 function busyHostsAt(day, time) {
   const busy = new Set();
@@ -753,6 +888,7 @@ function busyHostsAt(day, time) {
     const hosts = Array.isArray(b.hosts) ? b.hosts : (b.railTeam||'').split(',').map(h=>h.trim()).filter(Boolean);
     hosts.forEach(h => busy.add(h));
   });
+  unavailableHostsAt(day, time).forEach(h => busy.add(h));
   return busy;
 }
 
@@ -762,6 +898,14 @@ function showMsg(type, html) {
   setTimeout(() => el.style.display='none', 6000);
 }
 function showError(msg) { showMsg('error', `<i class="ti ti-alert-circle"></i> ${msg}`); }
+
+function showAvailMsg(type, html) {
+  const el = document.getElementById('avail-'+type+'-msg');
+  el.style.display = 'block'; el.innerHTML = html;
+  setTimeout(() => el.style.display='none', 6000);
+}
+function showAvailError(msg)   { showAvailMsg('error',   `<i class="ti ti-alert-circle"></i> ${msg}`); }
+function showAvailSuccess(msg) { showAvailMsg('success', `<i class="ti ti-circle-check"></i> ${msg}`); }
 
 function topicBadge(t) {
   const m = {'Product demo':'badge-blue','Partnership discussion':'badge-green',
@@ -848,22 +992,27 @@ function renderHostPills() {
     engineering: TEAM.filter(m => m.role==='Engineering'),
     other:       TEAM.filter(m => ['ID','Other'].includes(m.role))
   };
-  const busy = (selectedSlot) ? busyHostsAt(currentDay, selectedSlot) : new Set();
+  const bookedBusy = (selectedSlot) ? (()=>{ const s=new Set(); getBookingsAt(currentDay, selectedSlot).forEach(b=>{ (Array.isArray(b.hosts)?b.hosts:(b.railTeam||'').split(',').map(h=>h.trim()).filter(Boolean)).forEach(h=>s.add(h)); }); return s; })() : new Set();
+  const offBusy = (selectedSlot) ? unavailableHostsAt(currentDay, selectedSlot) : new Set();
   ['sales','engineering','other'].forEach(g => {
     const el = document.getElementById(`host-pills-${g}`);
     if (!el) return;
     el.innerHTML = groups[g].map(m => {
-      const name    = fullName(m);
-      const rc      = RC[m.role] || RC.Other;
-      const isSel   = selectedHosts.includes(name);
-      const isBusy  = busy.has(name) && !isSel;
+      const name     = fullName(m);
+      const rc       = RC[m.role] || RC.Other;
+      const isSel    = selectedHosts.includes(name);
+      const isBooked = bookedBusy.has(name) && !isSel;
+      const isOff    = offBusy.has(name) && !isSel;
+      const isBusy   = isBooked || isOff;
       const style = isBusy
         ? 'opacity:0.4;text-decoration:line-through;cursor:not-allowed;background:#f3f3f3;border-color:#ddd;color:#999;'
         : (isSel ? `background:${rc.bg};border-color:${rc.border};color:${rc.color};font-weight:500;` : '');
-      return `<button class="host-pill" ${isBusy?'disabled title="Already booked in this slot"':''}
+      const tooltip = isBooked ? 'Already booked in this slot' : (isOff ? 'Marked unavailable at this time' : '');
+      const icon = isOff ? 'calendar-off' : 'lock';
+      return `<button class="host-pill" ${isBusy?`disabled title="${tooltip}"`:''}
         onclick="${isBusy?'':`toggleHost('${name.replace(/'/g,"\\'")}')`}"
         style="${style}"
-      >${m.first} ${m.last?m.last[0]+'.':''}${isBusy?' <i class="ti ti-lock" style="font-size:10px;"></i>':''}</button>`;
+      >${m.first} ${m.last?m.last[0]+'.':''}${isBusy?` <i class="ti ti-${icon}" style="font-size:10px;"></i>`:''}</button>`;
     }).join('');
   });
   renderSelectedTags();
@@ -903,6 +1052,29 @@ function populateHostFilter() {
   });
 }
 
+function populateAvailPersonDropdown() {
+  const sel = document.getElementById('avail-person');
+  TEAM.slice().sort((a,b)=>fullName(a).localeCompare(fullName(b))).forEach(m => {
+    const o = document.createElement('option');
+    o.value = o.textContent = fullName(m);
+    sel.appendChild(o);
+  });
+  const saved = localStorage.getItem('innotrans_avail_person');
+  if (saved) sel.value = saved;
+  sel.addEventListener('change', () => {
+    localStorage.setItem('innotrans_avail_person', sel.value);
+    renderAvailList();
+  });
+}
+
+function populateAvailTimeDropdowns() {
+  const startSel = document.getElementById('avail-start');
+  const endSel   = document.getElementById('avail-end');
+  startSel.innerHTML = ALL_TIMES.map(t => `<option>${t}</option>`).join('');
+  endSel.innerHTML   = ALL_TIMES.map(t => `<option>${t}</option>`).join('');
+  endSel.value = ALL_TIMES[ALL_TIMES.length-1];
+}
+
 // ── ACTIONS ──────────────────────────────────────────────────────────────
 function selectDay(el, day) {
   document.querySelectorAll('.day-tab').forEach(d => d.classList.remove('active'));
@@ -933,6 +1105,70 @@ function selectCalSpace(el, space) {
   document.querySelectorAll('.cal-space-tab').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
   calSpace=space; renderCalendar();
+}
+
+// ── AVAILABILITY: ACTIONS & RENDER ─────────────────────────────────────
+async function addAvailability() {
+  const person = document.getElementById('avail-person').value;
+  const day    = document.getElementById('avail-day').value;
+  const start  = document.getElementById('avail-start').value;
+  const end    = document.getElementById('avail-end').value;
+  const reason = document.getElementById('avail-reason').value.trim();
+
+  if (!person) { showAvailError('Please select your name first.'); return; }
+  if (start >= end) { showAvailError('End time must be after start time.'); return; }
+
+  const btn = document.getElementById('avail-add-btn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+
+  const entry = { person, day, startTime:start, endTime:end, reason };
+  const ok = await saveAvailability(entry);
+
+  btn.disabled = false;
+  btn.innerHTML = '<i class="ti ti-calendar-off"></i> Mark unavailable';
+
+  if (!ok) { showAvailError('Failed to save. Please try again.'); return; }
+
+  availability.push(entry);
+  document.getElementById('avail-reason').value = '';
+  renderAvailList();
+  renderHostPills();
+  showAvailSuccess(`Marked ${person} unavailable on ${day}, ${start}–${end}.`);
+}
+
+async function removeAvailability(pageId) {
+  if (!confirm('Remove this unavailability entry?')) return;
+  const ok = await deleteAvailability(pageId);
+  if (!ok) { showAvailError('Failed to remove. Please try again.'); return; }
+  availability = availability.filter(a => a.pageId !== pageId);
+  renderAvailList();
+  renderHostPills();
+}
+
+function renderAvailList() {
+  const person = document.getElementById('avail-person').value;
+  const list = document.getElementById('avail-list');
+  const dayOrder = DAYS;
+  const mine = availability
+    .filter(a => !person || a.person===person)
+    .slice()
+    .sort((a,b) => dayOrder.indexOf(a.day)-dayOrder.indexOf(b.day) || a.startTime.localeCompare(b.startTime));
+
+  if (!mine.length) {
+    list.innerHTML = `<p style="color:var(--text-tertiary);font-size:13px;">${person?'No unavailable times set yet.':'Select your name above to see your unavailable times.'}</p>`;
+    return;
+  }
+  list.innerHTML = mine.map(a => `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border-light,#eee);">
+      <div>
+        <div style="font-weight:500;font-size:13.5px;">${a.person}${person? '' : ''}</div>
+        <div style="font-size:12.5px;color:var(--text-tertiary);">${a.day} · ${a.startTime}–${a.endTime}${a.reason?' · '+a.reason:''}</div>
+      </div>
+      <button onclick="removeAvailability('${a.pageId}')" title="Remove" style="background:none;border:none;color:#c0392b;cursor:pointer;font-size:16px;padding:4px;">
+        <i class="ti ti-trash"></i>
+      </button>
+    </div>
+  `).join('');
 }
 
 async function bookMeeting() {
@@ -1079,10 +1315,11 @@ function switchTab(name, e) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   e.target.closest('.tab').classList.add('active');
   document.getElementById('view-'+name).classList.add('active');
-  if (name==='list')     { renderList(); updateStats(); }
-  if (name==='book')     { renderSlots(); renderSpacePills(); }
-  if (name==='team')     { renderTeam(); }
-  if (name==='calendar') { renderCalendar(); }
+  if (name==='list')         { renderList(); updateStats(); }
+  if (name==='book')         { renderSlots(); renderSpacePills(); }
+  if (name==='team')         { renderTeam(); }
+  if (name==='calendar')     { renderCalendar(); }
+  if (name==='availability') { renderAvailList(); }
 }
 
 // ── EXPORT CSV ───────────────────────────────────────────────────────────
@@ -1105,7 +1342,10 @@ function exportCSV() {
 // ── INIT ─────────────────────────────────────────────────────────────────
 renderHostPills();
 populateHostFilter();
+populateAvailPersonDropdown();
+populateAvailTimeDropdowns();
 loadBookings();
+loadAvailability().then(() => { renderHostPills(); renderAvailList(); });
 </script>
 </body>
 </html>
