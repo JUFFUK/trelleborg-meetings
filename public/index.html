@@ -504,22 +504,31 @@
   <div id="view-calendar" class="view">
     <div class="card">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:8px;">
-        <div class="cal-legend">
+        <div class="cal-legend" id="cal-legend">
           <span class="cal-legend-item"><span class="cal-legend-dot" style="background:#E1F5EE;border:0.5px solid #5DCAA5;"></span> All free</span>
           <span class="cal-legend-item"><span class="cal-legend-dot" style="background:#FAEEDA;border:0.5px solid #EF9F27;"></span> Partial</span>
           <span class="cal-legend-item"><span class="cal-legend-dot" style="background:#f0efec;border:0.5px solid #d0cfcb;"></span> Full</span>
         </div>
-        <button class="btn-outline" onclick="loadBookings()"><i class="ti ti-refresh"></i> Refresh</button>
+        <button class="btn-outline" onclick="loadBookings(); loadAvailability().then(()=>{ renderCalendar(); renderHostPills(); });"><i class="ti ti-refresh"></i> Refresh</button>
       </div>
-      <p class="section-label">Filter by space</p>
-      <div class="cal-space-tabs">
-        <button class="cal-space-tab active" onclick="selectCalSpace(this,'all')">All spaces</button>
-        <button class="cal-space-tab" onclick="selectCalSpace(this,'Private room A')"><i class="ti ti-lock" style="font-size:12px;vertical-align:-1px;margin-right:3px;"></i>Private A</button>
-        <button class="cal-space-tab" onclick="selectCalSpace(this,'Private room B')"><i class="ti ti-lock" style="font-size:12px;vertical-align:-1px;margin-right:3px;"></i>Private B</button>
-        <button class="cal-space-tab" onclick="selectCalSpace(this,'Informal space 1')"><i class="ti ti-armchair" style="font-size:12px;vertical-align:-1px;margin-right:3px;"></i>Informal 1</button>
-        <button class="cal-space-tab" onclick="selectCalSpace(this,'Informal space 2')"><i class="ti ti-armchair" style="font-size:12px;vertical-align:-1px;margin-right:3px;"></i>Informal 2</button>
-        <button class="cal-space-tab" onclick="selectCalSpace(this,'Informal space 3')"><i class="ti ti-armchair" style="font-size:12px;vertical-align:-1px;margin-right:3px;"></i>Informal 3</button>
+
+      <div class="cal-space-tabs" style="margin-bottom:0.75rem;">
+        <button class="cal-space-tab active" id="cal-mode-spaces" onclick="selectCalMode('spaces')"><i class="ti ti-door" style="font-size:12px;vertical-align:-1px;margin-right:3px;"></i>Spaces</button>
+        <button class="cal-space-tab" id="cal-mode-team" onclick="selectCalMode('team')"><i class="ti ti-users" style="font-size:12px;vertical-align:-1px;margin-right:3px;"></i>Team availability</button>
       </div>
+
+      <div id="cal-spaces-filter">
+        <p class="section-label">Filter by space</p>
+        <div class="cal-space-tabs">
+          <button class="cal-space-tab active" onclick="selectCalSpace(this,'all')">All spaces</button>
+          <button class="cal-space-tab" onclick="selectCalSpace(this,'Private room A')"><i class="ti ti-lock" style="font-size:12px;vertical-align:-1px;margin-right:3px;"></i>Private A</button>
+          <button class="cal-space-tab" onclick="selectCalSpace(this,'Private room B')"><i class="ti ti-lock" style="font-size:12px;vertical-align:-1px;margin-right:3px;"></i>Private B</button>
+          <button class="cal-space-tab" onclick="selectCalSpace(this,'Informal space 1')"><i class="ti ti-armchair" style="font-size:12px;vertical-align:-1px;margin-right:3px;"></i>Informal 1</button>
+          <button class="cal-space-tab" onclick="selectCalSpace(this,'Informal space 2')"><i class="ti ti-armchair" style="font-size:12px;vertical-align:-1px;margin-right:3px;"></i>Informal 2</button>
+          <button class="cal-space-tab" onclick="selectCalSpace(this,'Informal space 3')"><i class="ti ti-armchair" style="font-size:12px;vertical-align:-1px;margin-right:3px;"></i>Informal 3</button>
+        </div>
+      </div>
+
       <div class="cal-wrap">
         <table class="cal-table" id="cal-table"></table>
       </div>
@@ -681,6 +690,7 @@ let selectedSlot  = null;
 let selectedSpace = null;
 let selectedHosts = [];
 let calSpace      = 'all';
+let calMode       = 'spaces';
 let bookings      = [];
 let availability  = [];
 
@@ -953,7 +963,17 @@ function renderSpacePills() {
 }
 
 // ── RENDER: CALENDAR ─────────────────────────────────────────────────────
+function selectCalMode(mode) {
+  calMode = mode;
+  document.getElementById('cal-mode-spaces').classList.toggle('active', mode==='spaces');
+  document.getElementById('cal-mode-team').classList.toggle('active', mode==='team');
+  document.getElementById('cal-spaces-filter').style.display = mode==='spaces' ? '' : 'none';
+  document.getElementById('cal-legend').style.display = mode==='spaces' ? '' : 'none';
+  renderCalendar();
+}
+
 function renderCalendar() {
+  if (calMode === 'team') { renderTeamCalendar(); return; }
   const tbl    = document.getElementById('cal-table');
   const spaces = calSpace==='all' ? ALL_SPACES : [calSpace];
   const total  = spaces.length;
@@ -979,6 +999,39 @@ function renderCalendar() {
         `<div class="cal-booking">${b.visitorName||b.name||''}${calSpace==='all'?' · '+b.space.replace('Private room','Priv').replace('Informal space','Inf'):''}</div>`
       ).join('');
       html += `<td><div class="${cls}">${label}${names}</div></td>`;
+    });
+    html += '</tr>';
+  });
+  tbl.innerHTML = html + '</tbody>';
+}
+
+function renderTeamCalendar() {
+  const tbl = document.getElementById('cal-table');
+  const totalTeam = TEAM.length;
+  let html = '<thead><tr><th class="time-col">Time</th>';
+  DAYS.forEach(d => html += `<th>${d}</th>`);
+  html += '</tr></thead><tbody>';
+  ALL_TIMES.forEach(t => {
+    html += `<tr><td class="time-cell">${t}</td>`;
+    DAYS.forEach(day => {
+      const isFri = day==='Fri 25 Sep';
+      if (isFri && !FRI_TIMES.includes(t)) {
+        html += `<td><div class="cal-cell empty-day" style="font-size:10px;text-align:center;padding-top:10px;color:#aaa;">—</div></td>`;
+        return;
+      }
+      const offNames    = Array.from(unavailableHostsAt(day, t));
+      const bookedNames = Array.from((()=>{ const s=new Set(); getBookingsAt(day,t).forEach(b=>{ (Array.isArray(b.hosts)?b.hosts:(b.railTeam||'').split(',').map(h=>h.trim()).filter(Boolean)).forEach(h=>s.add(h)); }); return s; })());
+      const unavailableCount = new Set([...offNames, ...bookedNames]).size;
+      const availableCount = totalTeam - unavailableCount;
+      let cls='cal-cell', label='';
+      if (unavailableCount===0)        { cls+=' free-all'; label=`${availableCount} of ${totalTeam} available`; }
+      else if (availableCount===0)     { cls+=' full'; label='Nobody available'; }
+      else                             { cls+=' partial'; label=`${availableCount} of ${totalTeam} available`; }
+      const rows = [
+        ...offNames.map(n => `<div class="cal-booking"><i class="ti ti-calendar-off" style="font-size:10px;vertical-align:-1px;"></i> ${n}</div>`),
+        ...bookedNames.filter(n=>!offNames.includes(n)).map(n => `<div class="cal-booking"><i class="ti ti-lock" style="font-size:10px;vertical-align:-1px;"></i> ${n}</div>`)
+      ].join('');
+      html += `<td><div class="${cls}">${label}${rows}</div></td>`;
     });
     html += '</tr>';
   });
