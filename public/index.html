@@ -338,6 +338,54 @@
     .badge-green { background: #EAF3DE; color: #27500A; }
     .badge-amber { background: #FAEEDA; color: #633806; }
     .badge-teal { background: #E1F5EE; color: #085041; }
+    .badge-purple { background: #EEEDFE; color: #3C3489; }
+    .badge-orange { background: #FCE4D6; color: #8A3B0A; }
+
+    /* Modal */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(20,20,18,0.45);
+      z-index: 200; align-items: flex-start; justify-content: center; padding: 2rem 1rem;
+      overflow-y: auto;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-box {
+      background: var(--bg); border-radius: var(--radius-lg);
+      max-width: 480px; width: 100%; padding: 1.5rem;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    }
+    .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+    .modal-header h3 { font-size: 16px; font-weight: 600; }
+    .modal-close { background: none; border: none; cursor: pointer; font-size: 18px; color: var(--text-tertiary); padding: 4px; }
+    .modal-close:hover { color: var(--text-primary); }
+    .modal-actions { display: flex; gap: 8px; margin-top: 1.25rem; }
+    .modal-actions .btn-primary { margin-top: 0; }
+    .checkbox-grid { display: flex; flex-wrap: wrap; gap: 6px; max-height: 160px; overflow-y: auto; padding: 8px; border: 0.5px solid var(--border); border-radius: var(--radius-sm); }
+    .checkbox-pill { display: flex; align-items: center; gap: 5px; font-size: 12px; padding: 4px 8px; border-radius: 20px; border: 0.5px solid var(--border); cursor: pointer; }
+    .checkbox-pill input { margin: 0; }
+    .edit-btn {
+      background: none; border: none; cursor: pointer;
+      color: var(--text-tertiary); font-size: 16px; padding: 4px;
+      border-radius: 4px;
+    }
+    .edit-btn:hover { color: #185FA5; background: #E6F1FB; }
+    .row-actions { display: flex; flex-direction: column; gap: 2px; }
+
+    /* Product area pills */
+    .pa-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+    .pa-pill {
+      padding: 6px 14px;
+      border: 0.5px solid var(--border);
+      border-radius: 20px;
+      font-size: 13px;
+      cursor: pointer;
+      color: var(--text-secondary);
+      background: var(--bg);
+      font-family: var(--font-sans);
+      transition: all 0.12s;
+    }
+    .pa-pill:hover { border-color: #aaa; background: var(--bg-secondary); }
+    .pa-pill.pa-selected { font-weight: 500; }
+    .pa-pill.pa-faded { opacity: 0.35; cursor: pointer; }
 
     /* Empty */
     .empty { text-align: center; padding: 2rem; color: var(--text-tertiary); font-size: 14px; }
@@ -466,6 +514,11 @@
       <div class="field"><label>Visitor name *</label><input type="text" id="f-name" placeholder="e.g. Jane Smith"></div>
       <div class="field"><label>Company *</label><input type="text" id="f-company" placeholder="e.g. Acme Corp"></div>
       <div class="field">
+        <label>Product area *</label>
+        <input type="hidden" id="f-product-area" value="">
+        <div class="pa-pills" id="f-product-area-pills"></div>
+      </div>
+      <div class="field">
         <label>Topic / meeting type</label>
         <select id="f-topic">
           <option value="">Select a topic…</option>
@@ -484,7 +537,8 @@
       <div class="field">
         <label>Rail team attendees <span style="color:var(--text-tertiary);font-weight:400;">(select one or more)</span></label>
         <div id="selected-hosts-row" class="selected-hosts-row"></div>
-        <div style="margin-top:8px;">
+        <div id="host-pills-empty" style="font-size:12px;color:var(--text-tertiary);margin-top:8px;display:none;">Select a product area above to see the relevant team.</div>
+        <div id="host-pills-groups" style="margin-top:8px;">
           <p class="role-group-label">Sales</p>
           <div class="host-pills" id="host-pills-sales"></div>
           <p class="role-group-label">Engineering</p>
@@ -544,6 +598,7 @@
       <div class="stat"><div class="stat-label">Total attendees</div><div class="stat-val" id="stat-attendees">0</div></div>
     </div>
     <div class="filter-row">
+      <input type="text" id="filter-search" placeholder="Search name, company, notes…" oninput="renderList()" style="flex:2;min-width:160px;padding:7px 10px;border:0.5px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font-sans);font-size:13px;background:var(--bg);color:var(--text-primary);">
       <select id="filter-day" onchange="renderList()">
         <option value="">All days</option>
         <option>Tue 22 Sep</option><option>Wed 23 Sep</option><option>Thu 24 Sep</option><option>Fri 25 Sep</option>
@@ -551,6 +606,11 @@
       <select id="filter-space-type" onchange="renderList()">
         <option value="">All spaces</option>
         <option value="private">Private rooms</option><option value="informal">Informal spaces</option>
+      </select>
+      <select id="filter-product-area" onchange="renderList()">
+        <option value="">All product areas</option>
+        <option>Antivibration Solutions</option><option>Sealing Solutions</option>
+        <option>Fluid Handling</option><option>Engineered Coated Fabrics</option>
       </select>
       <select id="filter-host" onchange="renderList()"><option value="">All hosts</option></select>
       <select id="filter-topic" onchange="renderList()">
@@ -628,34 +688,120 @@
   </div>
 </main>
 
+<!-- EDIT BOOKING MODAL -->
+<div class="modal-overlay" id="edit-modal-overlay">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3><i class="ti ti-pencil"></i> Edit booking</h3>
+      <button class="modal-close" onclick="closeEditModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div id="edit-error-msg" class="error-msg"></div>
+    <div class="field"><label>Visitor name *</label><input type="text" id="e-name"></div>
+    <div class="field"><label>Company *</label><input type="text" id="e-company"></div>
+    <div class="field">
+      <label>Product area *</label>
+      <input type="hidden" id="e-product-area" value="">
+      <div class="pa-pills" id="e-product-area-pills"></div>
+    </div>
+    <div class="field" style="display:flex;gap:10px;">
+      <div style="flex:1;">
+        <label>Day</label>
+        <select id="e-day" onchange="onEditDayChange()">
+          <option>Tue 22 Sep</option><option>Wed 23 Sep</option><option>Thu 24 Sep</option><option>Fri 25 Sep</option>
+        </select>
+      </div>
+      <div style="flex:1;">
+        <label>Time</label>
+        <select id="e-time" onchange="onEditTimeOrSpaceChange()"></select>
+      </div>
+    </div>
+    <div class="field">
+      <label>Space</label>
+      <select id="e-space" onchange="onEditTimeOrSpaceChange()">
+        <option>Private room A</option><option>Private room B</option>
+        <option>Informal space 1</option><option>Informal space 2</option><option>Informal space 3</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Topic / meeting type</label>
+      <select id="e-topic">
+        <option value="">Select a topic…</option>
+        <option>Product demo</option><option>Partnership discussion</option>
+        <option>Technical briefing</option><option>Commercial negotiation</option>
+        <option>Press interview</option><option>General networking</option><option>Other</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Number of attendees</label>
+      <select id="e-attendees">
+        <option value="1">1 person</option><option value="2">2 people</option>
+        <option value="3">3 people</option><option value="4">4 people</option><option value="5+">5+ people</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Rail team attendees <span style="color:var(--text-tertiary);font-weight:400;">(add/remove)</span></label>
+      <div class="checkbox-grid" id="e-host-grid"></div>
+    </div>
+    <div class="field"><label>Notes (optional)</label><textarea id="e-notes" rows="2"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn-outline" style="flex:1;" onclick="closeEditModal()">Cancel</button>
+      <button class="btn-primary" id="edit-save-btn" style="flex:2;" onclick="saveEdit()"><i class="ti ti-check"></i> Save changes</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ── CONFIG ──────────────────────────────────────────────────────────────
 const NOTION_DB    = 'c837a2318b2040ad86327f553eaf6ec0';     // Meetings database ID
 const AVAIL_DB      = 'a5bb960db6c546f5af7540f91b3c1e51';    // Availability database ID
 
 // ── TEAM DATA ───────────────────────────────────────────────────────────
+const PRODUCT_AREAS = ['Antivibration Solutions','Sealing Solutions','Fluid Handling','Engineered Coated Fabrics'];
+
 const TEAM = [
-  {first:'Arsalan',   last:'Bagheri',       role:'Sales'},
-  {first:'Elion',     last:'Pogaj',          role:'Sales'},
-  {first:'Jörg',      last:'Spreckels',      role:'Engineering'},
-  {first:'Kim',       last:'Lindholm',       role:'Sales'},
-  {first:'Stefan',    last:'Hülsiggensen',   role:'Sales'},
-  {first:'Patrick',   last:'Zenker',         role:'Engineering'},
-  {first:'Rüdiger',   last:'Hack',           role:'Engineering'},
-  {first:'Sascha',    last:'Ungewiss',       role:'Sales'},
-  {first:'Tobias',    last:'Denner',         role:'Sales'},
-  {first:'Jim',       last:'Weaver',         role:'Sales'},
-  {first:'Klaua',     last:'Ulf',            role:'Sales'},
-  {first:'Corinna',   last:'Gall',           role:'Internal'},
-  {first:'Lutz',      last:'Claudia',        role:'Sales'},
-  {first:'Conrad',    last:'Hextall',        role:'Engineering'},
-  {first:'Samuele',   last:'Vona',           role:'Sales'},
-  {first:'Antoine',   last:'Charrier',       role:'Sales'},
-  {first:'Jean-François', last:'Mabile',     role:'GM'},
-  {first:'Ranadip',   last:'Basu',           role:'Sales'},
-  {first:'Mallikarjun',last:'Uppu',          role:'Engineering'},
-  {first:'Sudeep',    last:'Mukherjee',      role:'Sales'},
-  {first:'Nathan',    last:'Lipkewycz',      role:'Sales'}
+  // ── Antivibration Solutions (real Rail team) ──
+  {first:'Arsalan',   last:'Bagheri',       role:'Sales',       productArea:'Antivibration Solutions'},
+  {first:'Elion',     last:'Pogaj',          role:'Sales',       productArea:'Antivibration Solutions'},
+  {first:'Jörg',      last:'Spreckels',      role:'Engineering', productArea:'Antivibration Solutions'},
+  {first:'Kim',       last:'Lindholm',       role:'Sales',       productArea:'Antivibration Solutions'},
+  {first:'Stefan',    last:'Hülsiggensen',   role:'Sales',       productArea:'Antivibration Solutions'},
+  {first:'Patrick',   last:'Zenker',         role:'Engineering', productArea:'Antivibration Solutions'},
+  {first:'Rüdiger',   last:'Hack',           role:'Engineering', productArea:'Antivibration Solutions'},
+  {first:'Sascha',    last:'Ungewiss',       role:'Sales',       productArea:'Antivibration Solutions'},
+  {first:'Tobias',    last:'Denner',         role:'Sales',       productArea:'Antivibration Solutions'},
+  {first:'Jim',       last:'Weaver',         role:'Sales',       productArea:'Antivibration Solutions'},
+  {first:'Klaua',     last:'Ulf',            role:'Sales',       productArea:'Antivibration Solutions'},
+  {first:'Corinna',   last:'Gall',           role:'Internal',    productArea:'Antivibration Solutions'},
+  {first:'Lutz',      last:'Claudia',        role:'Sales',       productArea:'Antivibration Solutions'},
+  {first:'Conrad',    last:'Hextall',        role:'Engineering', productArea:'Antivibration Solutions'},
+  {first:'Samuele',   last:'Vona',           role:'Sales',       productArea:'Antivibration Solutions'},
+  {first:'Antoine',   last:'Charrier',       role:'Sales',       productArea:'Antivibration Solutions'},
+  {first:'Jean-François', last:'Mabile',     role:'GM',          productArea:'Antivibration Solutions'},
+  {first:'Ranadip',   last:'Basu',           role:'Sales',       productArea:'Antivibration Solutions'},
+  {first:'Mallikarjun',last:'Uppu',          role:'Engineering', productArea:'Antivibration Solutions'},
+  {first:'Sudeep',    last:'Mukherjee',      role:'Sales',       productArea:'Antivibration Solutions'},
+  {first:'Nathan',    last:'Lipkewycz',      role:'Sales',       productArea:'Antivibration Solutions'},
+
+  // ── Sealing Solutions (DUMMY — replace with real names) ──
+  {first:'Dummy',     last:'Sealing1',       role:'Sales',       productArea:'Sealing Solutions'},
+  {first:'Dummy',     last:'Sealing2',       role:'Sales',       productArea:'Sealing Solutions'},
+  {first:'Dummy',     last:'Sealing3',       role:'Engineering', productArea:'Sealing Solutions'},
+  {first:'Dummy',     last:'Sealing4',       role:'Engineering', productArea:'Sealing Solutions'},
+  {first:'Dummy',     last:'Sealing5',       role:'GM',          productArea:'Sealing Solutions'},
+
+  // ── Fluid Handling (DUMMY — replace with real names) ──
+  {first:'Dummy',     last:'Fluid1',         role:'Sales',       productArea:'Fluid Handling'},
+  {first:'Dummy',     last:'Fluid2',         role:'Sales',       productArea:'Fluid Handling'},
+  {first:'Dummy',     last:'Fluid3',         role:'Engineering', productArea:'Fluid Handling'},
+  {first:'Dummy',     last:'Fluid4',         role:'Engineering', productArea:'Fluid Handling'},
+  {first:'Dummy',     last:'Fluid5',         role:'GM',          productArea:'Fluid Handling'},
+
+  // ── Engineered Coated Fabrics (DUMMY — replace with real names) ──
+  {first:'Dummy',     last:'Fabrics1',       role:'Sales',       productArea:'Engineered Coated Fabrics'},
+  {first:'Dummy',     last:'Fabrics2',       role:'Sales',       productArea:'Engineered Coated Fabrics'},
+  {first:'Dummy',     last:'Fabrics3',       role:'Engineering', productArea:'Engineered Coated Fabrics'},
+  {first:'Dummy',     last:'Fabrics4',       role:'Engineering', productArea:'Engineered Coated Fabrics'},
+  {first:'Dummy',     last:'Fabrics5',       role:'GM',          productArea:'Engineered Coated Fabrics'}
 ];
 
 const RC = {
@@ -665,6 +811,13 @@ const RC = {
   GM:          {bg:'#FAEEDA', color:'#633806', border:'#EF9F27'},
   ID:          {bg:'#E1F5EE', color:'#085041', border:'#5DCAA5'},
   Other:       {bg:'#F1EFE8', color:'#444441', border:'#B4B2A9'}
+};
+
+const PA_COLORS = {
+  'Antivibration Solutions':   {bg:'#E6F1FB', color:'#0C447C', border:'#85B7EB'},
+  'Sealing Solutions':         {bg:'#EAF3DE', color:'#27500A', border:'#97C459'},
+  'Fluid Handling':            {bg:'#FCE4D6', color:'#8A3B0A', border:'#EF9F27'},
+  'Engineered Coated Fabrics': {bg:'#EEEDFE', color:'#3C3489', border:'#AFA9EC'}
 };
 
 const DAYS = ['Tue 22 Sep','Wed 23 Sep','Thu 24 Sep','Fri 25 Sep'];
@@ -744,6 +897,7 @@ async function loadBookings() {
         space:       getProp('Space'),
         spaceType:   getProp('Space type'),
         topic:       getProp('Topic'),
+        productArea: getProp('Product area'),
         attendees:   getProp('Attendees', 1),
         railTeam:    getProp('Rail team'),
         notes:       getProp('Notes')
@@ -776,6 +930,7 @@ async function saveToNotion(b) {
         'Space':        { select: { name: b.space } },
         'Space type':   { select: { name: b.spaceType } },
         'Topic':        { select: { name: b.topic || 'Other' } },
+        'Product area': { select: { name: b.productArea } },
         'Attendees':    { rich_text: richText(String(parseInt(b.attendees)||1)) },
         'Rail team':    { rich_text: richText(b.hosts.join(', ')) },
         'Notes':        { rich_text: richText(b.notes||'') }
@@ -1038,12 +1193,55 @@ function renderTeamCalendar() {
   tbl.innerHTML = html + '</tbody>';
 }
 
+// ── RENDER: PRODUCT AREA PILLS ───────────────────────────────────────────
+function renderProductAreaPills(prefix) {
+  const hidden = document.getElementById(prefix+'-product-area');
+  const wrap   = document.getElementById(prefix+'-product-area-pills');
+  if (!hidden || !wrap) return;
+  const current = hidden.value;
+  wrap.innerHTML = PRODUCT_AREAS.map(a => {
+    const isSel  = current===a;
+    const faded  = current && !isSel;
+    const colors = PA_COLORS[a];
+    const style  = isSel ? `background:${colors.bg};border-color:${colors.border};color:${colors.color};` : '';
+    return `<button type="button" class="pa-pill${isSel?' pa-selected':''}${faded?' pa-faded':''}" style="${style}"
+      onclick="selectProductArea('${prefix}','${a.replace(/'/g,"\\'")}')">${a}</button>`;
+  }).join('');
+}
+
+function selectProductArea(prefix, area) {
+  const hidden = document.getElementById(prefix+'-product-area');
+  hidden.value = (hidden.value===area) ? '' : area; // clicking the selected pill again clears it
+  renderProductAreaPills(prefix);
+  if (prefix==='f') onProductAreaChange();
+  else renderEditHostGrid();
+}
+
 // ── RENDER: HOST PILLS ───────────────────────────────────────────────────
+function onProductAreaChange() {
+  // Selecting a different product area clears any already-picked hosts that
+  // no longer belong to that team.
+  const area = document.getElementById('f-product-area').value;
+  selectedHosts = selectedHosts.filter(name => {
+    const m = TEAM.find(x => fullName(x)===name);
+    return m && m.productArea===area;
+  });
+  renderHostPills();
+}
+
 function renderHostPills() {
+  const area = document.getElementById('f-product-area') ? document.getElementById('f-product-area').value : '';
+  const emptyEl  = document.getElementById('host-pills-empty');
+  const groupsEl = document.getElementById('host-pills-groups');
+  if (emptyEl && groupsEl) {
+    if (!area) { emptyEl.style.display='block'; groupsEl.style.display='none'; renderSelectedTags(); return; }
+    emptyEl.style.display='none'; groupsEl.style.display='block';
+  }
+  const teamForArea = area ? TEAM.filter(m => m.productArea===area) : TEAM;
   const groups = {
-    sales:       TEAM.filter(m => ['Sales','Internal','GM'].includes(m.role)),
-    engineering: TEAM.filter(m => m.role==='Engineering'),
-    other:       TEAM.filter(m => ['ID','Other'].includes(m.role))
+    sales:       teamForArea.filter(m => ['Sales','Internal','GM'].includes(m.role)),
+    engineering: teamForArea.filter(m => m.role==='Engineering'),
+    other:       teamForArea.filter(m => ['ID','Other'].includes(m.role))
   };
   const bookedBusy = (selectedSlot) ? (()=>{ const s=new Set(); getBookingsAt(currentDay, selectedSlot).forEach(b=>{ (Array.isArray(b.hosts)?b.hosts:(b.railTeam||'').split(',').map(h=>h.trim()).filter(Boolean)).forEach(h=>s.add(h)); }); return s; })() : new Set();
   const offBusy = (selectedSlot) ? unavailableHostsAt(currentDay, selectedSlot) : new Set();
@@ -1227,11 +1425,13 @@ function renderAvailList() {
 async function bookMeeting() {
   const name     = document.getElementById('f-name').value.trim();
   const company  = document.getElementById('f-company').value.trim();
+  const productArea = document.getElementById('f-product-area').value;
   const topic    = document.getElementById('f-topic').value;
   const attendees= document.getElementById('f-attendees').value;
   const notes    = document.getElementById('f-notes').value.trim();
   if (!name)          { alert('Please enter a visitor name.'); return; }
   if (!company)       { alert('Please enter a company.'); return; }
+  if (!productArea)   { alert('Please select a product area.'); return; }
   if (!selectedSlot)  { alert('Please select a time slot.'); return; }
   if (!selectedSpace) { alert('Please select a meeting space.'); return; }
 
@@ -1251,12 +1451,14 @@ async function bookMeeting() {
   }
 
   const booking = { name, company, day:currentDay, time:selectedSlot, space:selectedSpace,
-    spaceType:spaceType(selectedSpace), topic, attendees, notes, hosts:[...selectedHosts] };
+    spaceType:spaceType(selectedSpace), topic, productArea, attendees, notes, hosts:[...selectedHosts] };
   const ok = await saveToNotion(booking);
   if (!ok) { showError('Failed to save to Notion. Please try again.'); return; }
 
   bookings.push({...booking, visitorName:name});
   document.getElementById('f-name').value=''; document.getElementById('f-company').value='';
+  document.getElementById('f-product-area').value='';
+  renderProductAreaPills('f');
   document.getElementById('f-topic').value=''; document.getElementById('f-attendees').value='1';
   document.getElementById('f-notes').value='';
   selectedSlot=null; selectedSpace=null; selectedHosts=[];
@@ -1273,17 +1475,21 @@ async function deleteBooking(pageId, idx) {
 
 // ── RENDER: LIST ─────────────────────────────────────────────────────────
 function renderList() {
-  const dayF   = document.getElementById('filter-day').value;
-  const spaceF = document.getElementById('filter-space-type').value;
-  const hostF  = document.getElementById('filter-host').value;
-  const topicF = document.getElementById('filter-topic').value;
+  const dayF    = document.getElementById('filter-day').value;
+  const spaceF  = document.getElementById('filter-space-type').value;
+  const hostF   = document.getElementById('filter-host').value;
+  const topicF  = document.getElementById('filter-topic').value;
+  const areaF   = document.getElementById('filter-product-area').value;
+  const searchF = (document.getElementById('filter-search').value || '').trim().toLowerCase();
   const filtered = bookings
     .map((b,i) => ({...b,_idx:i}))
     .filter(b =>
       (!dayF   || b.day===dayF) &&
       (!spaceF || b.spaceType===spaceF) &&
       (!hostF  || (b.railTeam||'').includes(hostF)) &&
-      (!topicF || b.topic===topicF)
+      (!topicF || b.topic===topicF) &&
+      (!areaF  || b.productArea===areaF) &&
+      (!searchF || [b.visitorName||b.name, b.company, b.notes].join(' ').toLowerCase().includes(searchF))
     )
     .sort((a,b) => {
       const d = DAYS.indexOf(a.day)-DAYS.indexOf(b.day);
@@ -1316,15 +1522,167 @@ function renderList() {
           <i class="ti ${isPriv?'ti-lock':'ti-armchair'}" style="font-size:12px;vertical-align:-1px;"></i>
           <span class="badge ${isPriv?'badge-blue':'badge-teal'}">${b.space}</span>
           ${b.topic?`&nbsp;<span class="badge ${topicBadge(b.topic)}">${b.topic}</span>`:''}
+          ${b.productArea?`&nbsp;<span class="badge ${productAreaBadge(b.productArea)}">${b.productArea}</span>`:''}
         </div>
         ${hostsArr.length?`<div class="booking-detail" style="margin-top:4px;"><i class="ti ti-users" style="font-size:12px;vertical-align:-1px;"></i> ${hostTags}</div>`:''}
         ${b.notes?`<div class="booking-detail" style="margin-top:2px;font-style:italic;">"${b.notes}"</div>`:''}
       </div>
-      <button class="del-btn" onclick="deleteBooking('${b.pageId||''}',${b._idx})" aria-label="Delete">
-        <i class="ti ti-trash"></i>
-      </button>
+      <div class="row-actions">
+        <button class="edit-btn" onclick="openEditModal(${b._idx})" aria-label="Edit">
+          <i class="ti ti-pencil"></i>
+        </button>
+        <button class="del-btn" onclick="deleteBooking('${b.pageId||''}',${b._idx})" aria-label="Delete">
+          <i class="ti ti-trash"></i>
+        </button>
+      </div>
     </div>`;
   }).join('');
+}
+
+function productAreaBadge(a) {
+  const m = {'Antivibration Solutions':'badge-blue','Sealing Solutions':'badge-green',
+    'Fluid Handling':'badge-orange','Engineered Coated Fabrics':'badge-purple'};
+  return m[a] || 'badge-gray';
+}
+
+// ── EDIT BOOKING ─────────────────────────────────────────────────────────
+let editIdx = null;
+let editSelectedHosts = [];
+
+function openEditModal(idx) {
+  const b = bookings[idx];
+  if (!b) return;
+  editIdx = idx;
+  editSelectedHosts = Array.isArray(b.hosts) ? [...b.hosts] : (b.railTeam||'').split(',').map(h=>h.trim()).filter(Boolean);
+
+  document.getElementById('e-name').value = b.visitorName || b.name || '';
+  document.getElementById('e-company').value = b.company || '';
+  document.getElementById('e-product-area').value = b.productArea || '';
+  renderProductAreaPills('e');
+  document.getElementById('e-day').value = b.day;
+  document.getElementById('e-topic').value = b.topic || '';
+  document.getElementById('e-attendees').value = b.attendees || '1';
+  document.getElementById('e-notes').value = b.notes || '';
+  document.getElementById('e-space').value = b.space;
+  populateEditTimeOptions();
+  document.getElementById('e-time').value = b.time;
+  renderEditHostGrid();
+  document.getElementById('edit-error-msg').style.display = 'none';
+  document.getElementById('edit-modal-overlay').classList.add('active');
+}
+
+function closeEditModal() {
+  document.getElementById('edit-modal-overlay').classList.remove('active');
+  editIdx = null;
+}
+
+function populateEditTimeOptions() {
+  const day = document.getElementById('e-day').value;
+  const sel = document.getElementById('e-time');
+  const current = sel.value;
+  sel.innerHTML = getTimesForDay(day).map(t => `<option>${t}</option>`).join('');
+  if (getTimesForDay(day).includes(current)) sel.value = current;
+}
+
+function onEditDayChange() {
+  populateEditTimeOptions();
+  renderEditHostGrid();
+}
+function onEditTimeOrSpaceChange() { renderEditHostGrid(); }
+
+function renderEditHostGrid() {
+  const grid = document.getElementById('e-host-grid');
+  const day = document.getElementById('e-day').value;
+  const time = document.getElementById('e-time').value;
+  const area = document.getElementById('e-product-area').value;
+  // Busy hosts at this day/time, excluding the booking currently being edited
+  const busy = new Set();
+  bookings.forEach((b,i) => {
+    if (i===editIdx) return;
+    if (b.day!==day || b.time!==time) return;
+    (Array.isArray(b.hosts)?b.hosts:(b.railTeam||'').split(',').map(h=>h.trim()).filter(Boolean)).forEach(h=>busy.add(h));
+  });
+  unavailableHostsAt(day, time).forEach(h=>busy.add(h));
+
+  // Drop any currently-selected hosts that don't belong to the now-selected product area
+  if (area) editSelectedHosts = editSelectedHosts.filter(name => {
+    const m = TEAM.find(x => fullName(x)===name);
+    return m && m.productArea===area;
+  });
+
+  const teamForArea = area ? TEAM.filter(m => m.productArea===area) : TEAM;
+  if (!area) {
+    grid.innerHTML = '<span style="font-size:12px;color:var(--text-tertiary);">Select a product area above to see the relevant team.</span>';
+    return;
+  }
+  grid.innerHTML = teamForArea.map(m => {
+    const name = fullName(m);
+    const isSel = editSelectedHosts.includes(name);
+    const isBusy = busy.has(name) && !isSel;
+    return `<label class="checkbox-pill" style="${isBusy?'opacity:0.4;text-decoration:line-through;cursor:not-allowed;':''}">
+      <input type="checkbox" ${isSel?'checked':''} ${isBusy?'disabled':''} onchange="toggleEditHost('${name.replace(/'/g,"\\'")}', this.checked)">
+      ${name}
+    </label>`;
+  }).join('');
+}
+
+function toggleEditHost(name, checked) {
+  if (checked) { if (!editSelectedHosts.includes(name)) editSelectedHosts.push(name); }
+  else { editSelectedHosts = editSelectedHosts.filter(h=>h!==name); }
+}
+
+async function saveEdit() {
+  if (editIdx===null) return;
+  const b = bookings[editIdx];
+  const name = document.getElementById('e-name').value.trim();
+  const company = document.getElementById('e-company').value.trim();
+  const productArea = document.getElementById('e-product-area').value;
+  const day = document.getElementById('e-day').value;
+  const time = document.getElementById('e-time').value;
+  const space = document.getElementById('e-space').value;
+  const topic = document.getElementById('e-topic').value;
+  const attendees = document.getElementById('e-attendees').value;
+  const notes = document.getElementById('e-notes').value.trim();
+
+  const errEl = document.getElementById('edit-error-msg');
+  errEl.style.display = 'none';
+  if (!name)        { errEl.textContent='Please enter a visitor name.'; errEl.style.display='block'; return; }
+  if (!company)     { errEl.textContent='Please enter a company.'; errEl.style.display='block'; return; }
+  if (!productArea) { errEl.textContent='Please select a product area.'; errEl.style.display='block'; return; }
+
+  // Conflict check: another booking already occupies this space at this day/time
+  const spaceTaken = bookings.some((other,i) => i!==editIdx && other.day===day && other.time===time && other.space===space);
+  if (spaceTaken) { errEl.textContent=`${space} is already booked at ${day} ${time}.`; errEl.style.display='block'; return; }
+
+  const btn = document.getElementById('edit-save-btn');
+  btn.disabled = true; btn.innerHTML = 'Saving…';
+  try {
+    await notionProxy(`/v1/pages/${b.pageId}`, 'PATCH', {
+      properties: {
+        'Visitor name': { title: richText(name) },
+        'Company':      { rich_text: richText(company) },
+        'Day':          { select: { name: day } },
+        'Time':         { rich_text: richText(time) },
+        'Space':        { select: { name: space } },
+        'Space type':   { select: { name: spaceType(space) } },
+        'Topic':        { select: { name: topic || 'Other' } },
+        'Product area': { select: { name: productArea } },
+        'Attendees':    { rich_text: richText(String(parseInt(attendees)||1)) },
+        'Rail team':    { rich_text: richText(editSelectedHosts.join(', ')) },
+        'Notes':        { rich_text: richText(notes) }
+      }
+    });
+    bookings[editIdx] = { ...b, visitorName:name, name, company, day, time, space,
+      spaceType: spaceType(space), topic, productArea, attendees, notes, hosts:[...editSelectedHosts], railTeam: editSelectedHosts.join(', ') };
+    closeEditModal();
+    renderList(); renderSlots(); renderSpacePills(); renderHostPills(); updateStats(); renderTeam();
+    showMsg('success', `<i class="ti ti-circle-check"></i> Booking for <strong>${name}</strong> updated.`);
+  } catch(e) {
+    console.error('saveEdit error:', e);
+    errEl.textContent = `Failed to save: ${e.message}`; errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false; btn.innerHTML = '<i class="ti ti-check"></i> Save changes';
+  }
 }
 
 // ── RENDER: TEAM ─────────────────────────────────────────────────────────
@@ -1378,10 +1736,10 @@ function switchTab(name, e) {
 // ── EXPORT CSV ───────────────────────────────────────────────────────────
 function exportCSV() {
   if (!bookings.length) { alert('No bookings to export yet.'); return; }
-  const headers = ['Day','Time','Space','Space type','Visitor name','Company','Topic','Attendees','Rail team','Notes'];
+  const headers = ['Day','Time','Space','Space type','Visitor name','Company','Product area','Topic','Attendees','Rail team','Notes'];
   const rows = bookings.map(b => {
     const hosts = Array.isArray(b.hosts) ? b.hosts.join('; ') : (b.railTeam||'');
-    return [b.day,b.time,b.space,b.spaceType,b.visitorName||b.name,b.company,b.topic,b.attendees,hosts,b.notes]
+    return [b.day,b.time,b.space,b.spaceType,b.visitorName||b.name,b.company,b.productArea,b.topic,b.attendees,hosts,b.notes]
       .map(v => `"${(v||'').replace(/"/g,'""')}"`);
   });
   const csv  = [headers,...rows].map(r=>r.join(',')).join('\n');
@@ -1393,6 +1751,10 @@ function exportCSV() {
 }
 
 // ── INIT ─────────────────────────────────────────────────────────────────
+document.getElementById('edit-modal-overlay').addEventListener('click', (e) => {
+  if (e.target.id === 'edit-modal-overlay') closeEditModal();
+});
+renderProductAreaPills('f');
 renderHostPills();
 populateHostFilter();
 populateAvailPersonDropdown();
