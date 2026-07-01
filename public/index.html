@@ -7,50 +7,34 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
       --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      --bg: #ffffff;
-      --bg-secondary: #f7f7f5;
-      --border: #e5e4e0;
-      --border-light: #eeede9;
-      --text-primary: #1a1a18;
-      --text-secondary: #6b6b68;
-      --text-tertiary: #a0a09c;
-      --radius-sm: 6px;
-      --radius-md: 8px;
-      --radius-lg: 12px;
+      --bg: #ffffff; --bg-secondary: #f7f7f5;
+      --border: #e5e4e0; --border-light: #eeede9;
+      --text-primary: #1a1a18; --text-secondary: #6b6b68; --text-tertiary: #a0a09c;
+      --radius-sm: 6px; --radius-md: 8px; --radius-lg: 12px;
       --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
     }
-
     body { font-family: var(--font-sans); background: var(--bg-secondary); color: var(--text-primary); min-height: 100vh; }
-
     header { background: var(--bg); border-bottom: 0.5px solid var(--border); padding: 0 1.5rem; position: sticky; top: 0; z-index: 100; }
     .header-inner { max-width: 960px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 56px; gap: 12px; }
     .header-brand { display: flex; align-items: center; gap: 10px; }
     .header-logo { width: 28px; height: 28px; background: #1a1a18; border-radius: 6px; display: flex; align-items: center; justify-content: center; }
     .header-logo span { color: #fff; font-size: 13px; font-weight: 700; }
-    .header-title { font-size: 15px; font-weight: 600; color: var(--text-primary); }
+    .header-title { font-size: 15px; font-weight: 600; }
     .header-sub { font-size: 12px; color: var(--text-tertiary); margin-top: 1px; }
     .notion-pill { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-tertiary); padding: 4px 10px; border: 0.5px solid var(--border); border-radius: 20px; background: var(--bg-secondary); }
-
     main { max-width: 960px; margin: 0 auto; padding: 1.5rem; }
-
     .tabs { display: flex; gap: 6px; margin-bottom: 1.5rem; flex-wrap: wrap; }
     .tab { padding: 7px 16px; border: 0.5px solid var(--border); border-radius: var(--radius-md); font-size: 13px; font-weight: 500; cursor: pointer; color: var(--text-secondary); background: var(--bg); font-family: var(--font-sans); display: inline-flex; align-items: center; gap: 6px; transition: all .15s; }
     .tab.active { background: #1a1a18; color: #fff; border-color: #1a1a18; }
     .tab:hover:not(.active) { background: var(--bg-secondary); color: var(--text-primary); }
-
-    .view { display: none; }
-    .view.active { display: block; }
-
+    .view { display: none; } .view.active { display: block; }
     .card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1rem; box-shadow: var(--shadow); }
     .section-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--text-tertiary); margin-bottom: 10px; }
-
     .day-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
     .day-tab { padding: 6px 14px; border: 0.5px solid var(--border); border-radius: var(--radius-md); font-size: 13px; cursor: pointer; background: var(--bg); font-family: var(--font-sans); color: var(--text-secondary); }
     .day-tab.active { background: #1a1a18; color: #fff; border-color: #1a1a18; }
-
     .slot-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px,1fr)); gap: 8px; margin-top: 10px; }
     .slot { padding: 8px 10px; border: 0.5px solid var(--border); border-radius: var(--radius-md); font-size: 13px; font-weight: 500; cursor: pointer; background: var(--bg); font-family: var(--font-sans); color: var(--text-primary); text-align: left; transition: all .15s; }
     .slot:hover:not(:disabled):not(.fully-taken) { border-color: #85B7EB; background: #E6F1FB; }
@@ -58,56 +42,44 @@
     .slot.partial { border-color: #EF9F27; }
     .slot.fully-taken { background: var(--bg-secondary); color: var(--text-tertiary); cursor: not-allowed; }
     .slot-avail { font-size: 10px; font-weight: 400; margin-top: 2px; opacity: .75; }
-
     .space-pills { display: flex; flex-wrap: wrap; gap: 8px; }
     .space-pill { padding: 8px 16px; border: 0.5px solid var(--border); border-radius: var(--radius-md); font-size: 13px; cursor: pointer; background: var(--bg); font-family: var(--font-sans); color: var(--text-secondary); transition: all .15s; }
     .space-pill:hover:not(:disabled) { border-color: #aaa; }
     .space-pill.selected-private { background: #E6F1FB; border-color: #85B7EB; color: #0C447C; font-weight: 500; }
     .space-pill.selected-informal { background: #E1F5EE; border-color: #5DCAA5; color: #085041; font-weight: 500; }
     .space-pill.disabled { opacity: .4; cursor: not-allowed; }
-
     .space-legend { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 10px; }
     .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-secondary); }
     .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
-
     .field { margin-bottom: 1rem; }
     .field label { display: block; font-size: 12px; font-weight: 500; color: var(--text-secondary); margin-bottom: 5px; }
     .field input, .field select, .field textarea { width: 100%; padding: 8px 10px; border: 0.5px solid var(--border); border-radius: var(--radius-md); font-size: 13px; font-family: var(--font-sans); color: var(--text-primary); background: var(--bg); outline: none; }
     .field input:focus, .field select:focus, .field textarea:focus { border-color: #1a1a18; }
     .field textarea { resize: vertical; min-height: 60px; }
-
-    /* Product area pills */
     .pa-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
     .pa-pill { padding: 6px 14px; border: 0.5px solid var(--border); border-radius: 20px; font-size: 13px; cursor: pointer; color: var(--text-secondary); background: var(--bg); font-family: var(--font-sans); transition: all .12s; }
     .pa-pill:hover { border-color: #aaa; background: var(--bg-secondary); }
     .pa-pill.pa-selected { font-weight: 500; }
     .pa-pill.pa-faded { opacity: .35; }
-
     .host-pills { display: flex; flex-wrap: wrap; gap: 6px; }
     .host-pill { padding: 5px 10px; border: 0.5px solid var(--border); border-radius: 20px; font-size: 12px; cursor: pointer; background: var(--bg); font-family: var(--font-sans); color: var(--text-secondary); transition: all .15s; }
     .host-pill:hover:not([disabled]) { border-color: #aaa; }
     .selected-hosts-row { display: flex; flex-wrap: wrap; gap: 6px; min-height: 24px; }
     .selected-host-chip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
-
     .btn-primary { display: inline-flex; align-items: center; gap: 6px; padding: 9px 18px; background: #1a1a18; color: #fff; border: none; border-radius: var(--radius-md); font-size: 13px; font-weight: 500; cursor: pointer; font-family: var(--font-sans); }
-    .btn-primary:hover { background: #333; }
-    .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+    .btn-primary:hover { background: #333; } .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
     .btn-outline { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; background: var(--bg); color: var(--text-secondary); border: 0.5px solid var(--border); border-radius: var(--radius-md); font-size: 12px; cursor: pointer; font-family: var(--font-sans); }
     .btn-outline:hover { background: var(--bg-secondary); color: var(--text-primary); }
-
     .success-msg { display: none; padding: 10px 14px; background: #E1F5EE; border: 0.5px solid #5DCAA5; border-radius: var(--radius-md); color: #085041; font-size: 13px; margin-bottom: 1rem; }
-    .error-msg { display: none; padding: 10px 14px; background: #FDECEA; border: 0.5px solid #E57373; border-radius: var(--radius-md); color: #B71C1C; font-size: 13px; margin-bottom: 1rem; }
-
+    .error-msg   { display: none; padding: 10px 14px; background: #FDECEA; border: 0.5px solid #E57373; border-radius: var(--radius-md); color: #B71C1C; font-size: 13px; margin-bottom: 1rem; }
     .stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 1rem; }
     .stat { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: .9rem 1rem; box-shadow: var(--shadow); }
     .stat-label { font-size: 11px; color: var(--text-tertiary); margin-bottom: 4px; }
-    .stat-val { font-size: 22px; font-weight: 600; color: var(--text-primary); }
-
+    .stat-val { font-size: 22px; font-weight: 600; }
     .filter-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1rem; align-items: center; }
     .filter-row select, .filter-row input[type="text"] { padding: 7px 10px; border: 0.5px solid var(--border); border-radius: var(--radius-md); font-size: 12px; font-family: var(--font-sans); color: var(--text-secondary); background: var(--bg); outline: none; }
     .filter-row input[type="text"] { min-width: 180px; }
     .filter-row select:focus, .filter-row input[type="text"]:focus { border-color: #1a1a18; color: var(--text-primary); }
-
     .booking-row { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 0.5px solid var(--border-light); }
     .booking-row:last-child { border-bottom: none; }
     .booking-avatar { width: 36px; height: 36px; border-radius: 50%; background: #E6F1FB; color: #0C447C; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; flex-shrink: 0; }
@@ -119,7 +91,6 @@
     .del-btn:hover { background: #FDECEA; color: #B71C1C; border-color: #E57373; }
     .edit-btn:hover { background: #E6F1FB; color: #0C447C; border-color: #85B7EB; }
     .row-actions { display: flex; gap: 4px; flex-shrink: 0; }
-
     .badge { display: inline-block; padding: 1px 7px; border-radius: 10px; font-size: 11px; font-weight: 500; }
     .badge-blue   { background: #E6F1FB; color: #0C447C; }
     .badge-green  { background: #EAF3DE; color: #27500A; }
@@ -128,16 +99,13 @@
     .badge-teal   { background: #E1F5EE; color: #085041; }
     .badge-purple { background: #EEEDFE; color: #3C3489; }
     .badge-orange { background: #FCE4D6; color: #8A3B0A; }
-
     .empty { text-align: center; padding: 2rem; color: var(--text-tertiary); font-size: 14px; }
-
     .team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px,1fr)); gap: 10px; }
     .team-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1rem; display: flex; align-items: center; gap: 10px; box-shadow: var(--shadow); }
     .team-avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; flex-shrink: 0; }
-    .team-name { font-size: 13px; font-weight: 500; color: var(--text-primary); margin-bottom: 2px; }
+    .team-name { font-size: 13px; font-weight: 500; margin-bottom: 2px; }
     .team-role { font-size: 11px; margin: 0; }
     .team-count { font-size: 11px; color: var(--text-tertiary); margin-top: 2px; }
-
     .cal-wrap { overflow-x: auto; }
     .cal-table { width: 100%; border-collapse: collapse; min-width: 560px; }
     .cal-table th { font-size: 12px; font-weight: 500; color: var(--text-secondary); padding: 8px 6px; text-align: center; border-bottom: 0.5px solid var(--border); white-space: nowrap; }
@@ -146,8 +114,8 @@
     .cal-table td.time-cell { font-size: 11px; color: var(--text-tertiary); padding: 3px 8px 3px 0; white-space: nowrap; vertical-align: middle; }
     .cal-cell { border-radius: 5px; padding: 4px 6px; font-size: 11px; line-height: 1.35; min-height: 36px; }
     .cal-cell.free-all { background: #E1F5EE; color: #085041; }
-    .cal-cell.partial { background: #FAEEDA; color: #633806; }
-    .cal-cell.full { background: var(--bg-secondary); color: var(--text-tertiary); }
+    .cal-cell.partial  { background: #FAEEDA; color: #633806; }
+    .cal-cell.full     { background: var(--bg-secondary); color: var(--text-tertiary); }
     .cal-cell.empty-day { background: transparent; }
     .cal-booking { font-size: 10px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: .85; }
     .cal-legend { display: flex; gap: 16px; flex-wrap: wrap; }
@@ -156,13 +124,10 @@
     .cal-space-tabs { display: flex; gap: 6px; margin-bottom: 1rem; flex-wrap: wrap; }
     .cal-space-tab { padding: 5px 12px; border: 0.5px solid var(--border); border-radius: var(--radius-md); font-size: 12px; cursor: pointer; color: var(--text-secondary); background: var(--bg); font-family: var(--font-sans); }
     .cal-space-tab.active { background: var(--bg-secondary); color: var(--text-primary); border-color: #aaa; font-weight: 500; }
-
     .loading-bar { text-align: center; padding: 1.5rem; font-size: 13px; color: var(--text-tertiary); }
-
     .role-group-label { font-size: 11px; font-weight: 500; color: var(--text-tertiary); margin: 10px 0 4px; text-transform: uppercase; letter-spacing: .04em; }
     .role-group-label:first-child { margin-top: 0; }
-
-    /* Edit modal */
+    /* Modal */
     .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 200; align-items: flex-start; justify-content: center; padding: 2rem 1rem; overflow-y: auto; }
     .modal-overlay.open { display: flex; }
     .modal-box { background: var(--bg); border-radius: var(--radius-lg); padding: 1.5rem; width: 100%; max-width: 480px; box-shadow: 0 8px 40px rgba(0,0,0,0.18); margin: auto; }
@@ -172,11 +137,14 @@
     .modal-close:hover { background: var(--bg-secondary); }
     .modal-footer { display: flex; gap: 8px; margin-top: 1.25rem; justify-content: flex-end; }
     .modal-info { font-size: 12px; color: var(--text-tertiary); background: var(--bg-secondary); border-radius: var(--radius-md); padding: 8px 10px; margin-bottom: 1rem; }
+    /* Avail */
+    .avail-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 0.5px solid var(--border-light); }
+    .avail-row:last-child { border-bottom: none; }
   </style>
 </head>
 <body>
 
-<!-- ── EDIT MODAL ──────────────────────────────────────────────────────── -->
+<!-- EDIT MODAL -->
 <div class="modal-overlay" id="edit-modal" onclick="handleOverlayClick(event)">
   <div class="modal-box" onclick="event.stopPropagation()">
     <div class="modal-header">
@@ -194,12 +162,11 @@
       </select>
     </div>
     <div class="field">
-      <label>Topic / meeting type</label>
+      <label>Topic</label>
       <select id="edit-topic">
         <option value="">Select a topic…</option>
-        <option>Product demo</option><option>Partnership discussion</option>
-        <option>Technical briefing</option><option>Commercial negotiation</option>
-        <option>Press interview</option><option>General networking</option><option>Other</option>
+        <option>Product demo</option><option>Partnership discussion</option><option>Technical briefing</option>
+        <option>Commercial negotiation</option><option>Press interview</option><option>General networking</option><option>Other</option>
       </select>
     </div>
     <div class="field">
@@ -208,31 +175,26 @@
       <div class="pa-pills" id="edit-product-area-pills"></div>
     </div>
     <div class="field">
-      <label>Number of visiting attendees</label>
+      <label>Visiting attendees</label>
       <select id="edit-attendees">
         <option value="1">1 person</option><option value="2">2 people</option>
         <option value="3">3 people</option><option value="4">4 people</option><option value="5+">5+ people</option>
       </select>
     </div>
     <div class="field">
-      <label>Rail team attendees</label>
+      <label>Rail team</label>
       <div id="edit-selected-hosts-row" class="selected-hosts-row" style="margin-bottom:8px;min-height:24px;"></div>
-      <div id="edit-host-pills-empty" style="font-size:12px;color:var(--text-tertiary);display:none;">Select a product area above to see the relevant team.</div>
+      <div id="edit-host-pills-empty" style="font-size:12px;color:var(--text-tertiary);display:none;">Select a product area to see the team.</div>
       <div id="edit-host-pills-groups">
-        <p class="role-group-label">Sales</p>
-        <div class="host-pills" id="edit-host-pills-sales"></div>
-        <p class="role-group-label">Engineering</p>
-        <div class="host-pills" id="edit-host-pills-engineering"></div>
-        <p class="role-group-label">Other</p>
-        <div class="host-pills" id="edit-host-pills-other"></div>
+        <p class="role-group-label">Sales</p><div class="host-pills" id="edit-host-pills-sales"></div>
+        <p class="role-group-label">Engineering</p><div class="host-pills" id="edit-host-pills-engineering"></div>
+        <p class="role-group-label">Other</p><div class="host-pills" id="edit-host-pills-other"></div>
       </div>
     </div>
     <div class="field"><label>Notes</label><textarea id="edit-notes" rows="2"></textarea></div>
     <div class="modal-footer">
       <button class="btn-outline" onclick="closeEdit()">Cancel</button>
-      <button class="btn-primary" id="edit-save-btn" onclick="saveEdit()">
-        <i class="ti ti-check"></i> Save changes
-      </button>
+      <button class="btn-primary" id="edit-save-btn" onclick="saveEdit()"><i class="ti ti-check"></i> Save changes</button>
     </div>
   </div>
 </div>
@@ -246,25 +208,23 @@
         <div class="header-sub">Meeting Scheduler · Messe Berlin · 22–25 Sep</div>
       </div>
     </div>
-    <span class="notion-pill">
-      <i class="ti ti-brand-notion" style="font-size:13px;"></i> Synced with Notion
-    </span>
+    <span class="notion-pill"><i class="ti ti-brand-notion" style="font-size:13px;"></i> Synced with Notion</span>
   </div>
 </header>
 
 <main>
   <div class="tabs">
     <button class="tab active" onclick="switchTab('book',event)"><i class="ti ti-calendar-plus"></i> Book a meeting</button>
-    <button class="tab" onclick="switchTab('calendar',event)"><i class="ti ti-layout-grid"></i> Calendar view</button>
+    <button class="tab" onclick="switchTab('calendar',event)"><i class="ti ti-layout-grid"></i> Calendar</button>
     <button class="tab" onclick="switchTab('list',event)"><i class="ti ti-list"></i> All bookings</button>
     <button class="tab" onclick="switchTab('team',event)"><i class="ti ti-users"></i> Rail team</button>
+    <button class="tab" onclick="switchTab('availability',event)"><i class="ti ti-calendar-off"></i> My availability</button>
   </div>
 
   <!-- BOOK -->
   <div id="view-book" class="view active">
     <div id="success-msg" class="success-msg"></div>
     <div id="error-msg" class="error-msg"></div>
-
     <div class="card">
       <p class="section-label">Select day</p>
       <div class="day-tabs">
@@ -280,26 +240,21 @@
         <span class="legend-item"><span class="legend-dot" style="background:#EF9F27;"></span> Partially booked</span>
         <span class="legend-item"><span class="legend-dot" style="background:#d0cfcb;"></span> Fully booked</span>
       </div>
-      <div class="slot-grid" id="slot-grid">
-        <div class="loading-bar" style="grid-column:1/-1;">Loading availability…</div>
-      </div>
+      <div class="slot-grid" id="slot-grid"><div class="loading-bar" style="grid-column:1/-1;">Loading availability…</div></div>
     </div>
-
     <div class="card" id="space-card" style="display:none;">
       <p class="section-label">Select a space</p>
       <div class="space-pills" id="space-pills"></div>
     </div>
-
     <div class="card">
       <div class="field"><label>Visitor name *</label><input type="text" id="f-name" placeholder="e.g. Anna Müller"></div>
       <div class="field"><label>Company *</label><input type="text" id="f-company" placeholder="e.g. Deutsche Bahn"></div>
       <div class="field">
-        <label>Topic / meeting type</label>
+        <label>Topic</label>
         <select id="f-topic">
           <option value="">Select a topic…</option>
-          <option>Product demo</option><option>Partnership discussion</option>
-          <option>Technical briefing</option><option>Commercial negotiation</option>
-          <option>Press interview</option><option>General networking</option><option>Other</option>
+          <option>Product demo</option><option>Partnership discussion</option><option>Technical briefing</option>
+          <option>Commercial negotiation</option><option>Press interview</option><option>General networking</option><option>Other</option>
         </select>
       </div>
       <div class="field">
@@ -308,29 +263,24 @@
         <div class="pa-pills" id="f-product-area-pills"></div>
       </div>
       <div class="field">
-        <label>Number of visiting attendees</label>
+        <label>Visiting attendees</label>
         <select id="f-attendees">
           <option value="1">1 person</option><option value="2">2 people</option>
           <option value="3">3 people</option><option value="4">4 people</option><option value="5+">5+ people</option>
         </select>
       </div>
       <div class="field">
-        <label>Rail team attendees <span style="color:var(--text-tertiary);font-weight:400;">(select one or more)</span></label>
+        <label>Rail team attendees <span style="color:var(--text-tertiary);font-weight:400;">(optional)</span></label>
         <div id="selected-hosts-row" class="selected-hosts-row" style="margin-bottom:8px;"></div>
         <div id="host-pills-empty" style="font-size:12px;color:var(--text-tertiary);margin-top:4px;">Select a product area above to see the relevant team.</div>
         <div id="host-pills-groups" style="display:none;margin-top:8px;">
-          <p class="role-group-label">Sales</p>
-          <div class="host-pills" id="host-pills-sales"></div>
-          <p class="role-group-label">Engineering</p>
-          <div class="host-pills" id="host-pills-engineering"></div>
-          <p class="role-group-label">Other</p>
-          <div class="host-pills" id="host-pills-other"></div>
+          <p class="role-group-label">Sales</p><div class="host-pills" id="host-pills-sales"></div>
+          <p class="role-group-label">Engineering</p><div class="host-pills" id="host-pills-engineering"></div>
+          <p class="role-group-label">Other</p><div class="host-pills" id="host-pills-other"></div>
         </div>
       </div>
       <div class="field"><label>Notes (optional)</label><textarea id="f-notes" rows="2" placeholder="Any specific requirements…"></textarea></div>
-      <button class="btn-primary" id="book-btn" onclick="bookMeeting()">
-        <i class="ti ti-check"></i> Confirm booking
-      </button>
+      <button class="btn-primary" id="book-btn" onclick="bookMeeting()"><i class="ti ti-check"></i> Confirm booking</button>
     </div>
   </div>
 
@@ -343,20 +293,18 @@
           <span class="cal-legend-item"><span class="cal-legend-dot" style="background:#FAEEDA;border:0.5px solid #EF9F27;"></span> Partial</span>
           <span class="cal-legend-item"><span class="cal-legend-dot" style="background:#f0efec;border:0.5px solid #d0cfcb;"></span> Full</span>
         </div>
-        <button class="btn-outline" onclick="loadBookings()"><i class="ti ti-refresh"></i> Refresh</button>
+        <button class="btn-outline" onclick="loadAll()"><i class="ti ti-refresh"></i> Refresh</button>
       </div>
       <p class="section-label">Filter by space</p>
       <div class="cal-space-tabs">
         <button class="cal-space-tab active" onclick="selectCalSpace(this,'all')">All spaces</button>
-        <button class="cal-space-tab" onclick="selectCalSpace(this,'Private room A')"><i class="ti ti-lock" style="font-size:12px;vertical-align:-1px;margin-right:3px;"></i>Private A</button>
-        <button class="cal-space-tab" onclick="selectCalSpace(this,'Private room B')"><i class="ti ti-lock" style="font-size:12px;vertical-align:-1px;margin-right:3px;"></i>Private B</button>
-        <button class="cal-space-tab" onclick="selectCalSpace(this,'Informal space 1')"><i class="ti ti-armchair" style="font-size:12px;vertical-align:-1px;margin-right:3px;"></i>Informal 1</button>
-        <button class="cal-space-tab" onclick="selectCalSpace(this,'Informal space 2')"><i class="ti ti-armchair" style="font-size:12px;vertical-align:-1px;margin-right:3px;"></i>Informal 2</button>
-        <button class="cal-space-tab" onclick="selectCalSpace(this,'Informal space 3')"><i class="ti ti-armchair" style="font-size:12px;vertical-align:-1px;margin-right:3px;"></i>Informal 3</button>
+        <button class="cal-space-tab" onclick="selectCalSpace(this,'Private room A')">Private A</button>
+        <button class="cal-space-tab" onclick="selectCalSpace(this,'Private room B')">Private B</button>
+        <button class="cal-space-tab" onclick="selectCalSpace(this,'Informal space 1')">Informal 1</button>
+        <button class="cal-space-tab" onclick="selectCalSpace(this,'Informal space 2')">Informal 2</button>
+        <button class="cal-space-tab" onclick="selectCalSpace(this,'Informal space 3')">Informal 3</button>
       </div>
-      <div class="cal-wrap">
-        <table class="cal-table" id="cal-table"></table>
-      </div>
+      <div class="cal-wrap"><table class="cal-table" id="cal-table"></table></div>
     </div>
   </div>
 
@@ -389,13 +337,11 @@
         <option>Antivibration Solutions</option><option>Sealing Solutions</option>
         <option>Fluid Handling</option><option>Engineered Coated Fabrics</option>
       </select>
-      <button class="btn-outline" onclick="loadBookings()"><i class="ti ti-refresh"></i> Sync</button>
+      <button class="btn-outline" onclick="loadAll()"><i class="ti ti-refresh"></i> Sync</button>
       <button class="btn-outline" onclick="exportCSV()"><i class="ti ti-download"></i> CSV</button>
     </div>
     <div class="card">
-      <div class="empty" id="empty-state">
-        <i class="ti ti-calendar-off" style="font-size:28px;display:block;margin-bottom:8px;"></i>No bookings yet
-      </div>
+      <div class="empty" id="empty-state"><i class="ti ti-calendar-off" style="font-size:28px;display:block;margin-bottom:8px;"></i>No bookings yet</div>
       <div id="booking-list"></div>
     </div>
   </div>
@@ -409,13 +355,43 @@
     </div>
     <div class="team-grid" id="team-grid"></div>
   </div>
+
+  <!-- AVAILABILITY -->
+  <div id="view-availability" class="view">
+    <div id="avail-success-msg" class="success-msg"></div>
+    <div id="avail-error-msg" class="error-msg"></div>
+    <div class="card">
+      <p class="section-label">Mark yourself unavailable</p>
+      <div class="field">
+        <label>Your name</label>
+        <select id="avail-person"><option value="">Select your name…</option></select>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+        <div class="field">
+          <label>Day</label>
+          <select id="avail-day">
+            <option>Tue 22 Sep</option><option>Wed 23 Sep</option><option>Thu 24 Sep</option><option>Fri 25 Sep</option>
+          </select>
+        </div>
+        <div class="field"><label>From</label><select id="avail-start"></select></div>
+        <div class="field"><label>Until</label><select id="avail-end"></select></div>
+      </div>
+      <div class="field"><label>Reason (optional)</label><input type="text" id="avail-reason" placeholder="e.g. Airport transfer"></div>
+      <button class="btn-primary" id="avail-add-btn" onclick="addAvailability()"><i class="ti ti-calendar-off"></i> Mark unavailable</button>
+    </div>
+    <div class="card">
+      <p class="section-label">Your unavailable times</p>
+      <div id="avail-list"><p style="color:var(--text-tertiary);font-size:13px;">Select your name above.</p></div>
+    </div>
+  </div>
 </main>
 
 <script>
-const NOTION_DS = 'a9a88af8-c285-42c2-8cf6-e421b6f69793';
+// ── CONFIG ───────────────────────────────────────────────────────────────
+const NOTION_DB = 'c837a2318b2040ad86327f553eaf6ec0';
+const AVAIL_DB  = 'a5bb960db6c546f5af7540f91b3c1e51';
 
 const PRODUCT_AREAS = ['Antivibration Solutions','Sealing Solutions','Fluid Handling','Engineered Coated Fabrics'];
-
 const PA_COLORS = {
   'Antivibration Solutions':   {bg:'#E6F1FB', color:'#0C447C', border:'#85B7EB'},
   'Sealing Solutions':         {bg:'#EAF3DE', color:'#27500A', border:'#97C459'},
@@ -424,7 +400,6 @@ const PA_COLORS = {
 };
 
 const TEAM = [
-  // Antivibration Solutions (real Rail team)
   {first:'Arsalan',      last:'Bagheri',      role:'Sales',       productArea:'Antivibration Solutions'},
   {first:'Elion',        last:'Pogaj',         role:'Sales',       productArea:'Antivibration Solutions'},
   {first:'Jörg',         last:'Spreckels',     role:'Engineering', productArea:'Antivibration Solutions'},
@@ -446,93 +421,95 @@ const TEAM = [
   {first:'Mallikarjun',  last:'Uppu',          role:'Engineering', productArea:'Antivibration Solutions'},
   {first:'Sudeep',       last:'Mukherjee',     role:'Sales',       productArea:'Antivibration Solutions'},
   {first:'Nathan',       last:'Lipkewycz',     role:'Sales',       productArea:'Antivibration Solutions'},
-  // Sealing Solutions (DUMMY — replace with real names)
-  {first:'Dummy',        last:'Sealing1',      role:'Sales',       productArea:'Sealing Solutions'},
-  {first:'Dummy',        last:'Sealing2',      role:'Sales',       productArea:'Sealing Solutions'},
-  {first:'Dummy',        last:'Sealing3',      role:'Engineering', productArea:'Sealing Solutions'},
-  {first:'Dummy',        last:'Sealing4',      role:'Engineering', productArea:'Sealing Solutions'},
-  {first:'Dummy',        last:'Sealing5',      role:'GM',          productArea:'Sealing Solutions'},
-  // Fluid Handling (DUMMY — replace with real names)
-  {first:'Dummy',        last:'Fluid1',        role:'Sales',       productArea:'Fluid Handling'},
-  {first:'Dummy',        last:'Fluid2',        role:'Sales',       productArea:'Fluid Handling'},
-  {first:'Dummy',        last:'Fluid3',        role:'Engineering', productArea:'Fluid Handling'},
-  {first:'Dummy',        last:'Fluid4',        role:'Engineering', productArea:'Fluid Handling'},
-  {first:'Dummy',        last:'Fluid5',        role:'GM',          productArea:'Fluid Handling'},
-  // Engineered Coated Fabrics (DUMMY — replace with real names)
-  {first:'Dummy',        last:'Fabrics1',      role:'Sales',       productArea:'Engineered Coated Fabrics'},
-  {first:'Dummy',        last:'Fabrics2',      role:'Sales',       productArea:'Engineered Coated Fabrics'},
-  {first:'Dummy',        last:'Fabrics3',      role:'Engineering', productArea:'Engineered Coated Fabrics'},
-  {first:'Dummy',        last:'Fabrics4',      role:'Engineering', productArea:'Engineered Coated Fabrics'},
-  {first:'Dummy',        last:'Fabrics5',      role:'GM',          productArea:'Engineered Coated Fabrics'}
+  {first:'Dummy',last:'Sealing1',role:'Sales',productArea:'Sealing Solutions'},
+  {first:'Dummy',last:'Sealing2',role:'Sales',productArea:'Sealing Solutions'},
+  {first:'Dummy',last:'Sealing3',role:'Engineering',productArea:'Sealing Solutions'},
+  {first:'Dummy',last:'Sealing4',role:'Engineering',productArea:'Sealing Solutions'},
+  {first:'Dummy',last:'Sealing5',role:'GM',productArea:'Sealing Solutions'},
+  {first:'Dummy',last:'Fluid1',role:'Sales',productArea:'Fluid Handling'},
+  {first:'Dummy',last:'Fluid2',role:'Sales',productArea:'Fluid Handling'},
+  {first:'Dummy',last:'Fluid3',role:'Engineering',productArea:'Fluid Handling'},
+  {first:'Dummy',last:'Fluid4',role:'Engineering',productArea:'Fluid Handling'},
+  {first:'Dummy',last:'Fluid5',role:'GM',productArea:'Fluid Handling'},
+  {first:'Dummy',last:'Fabrics1',role:'Sales',productArea:'Engineered Coated Fabrics'},
+  {first:'Dummy',last:'Fabrics2',role:'Sales',productArea:'Engineered Coated Fabrics'},
+  {first:'Dummy',last:'Fabrics3',role:'Engineering',productArea:'Engineered Coated Fabrics'},
+  {first:'Dummy',last:'Fabrics4',role:'Engineering',productArea:'Engineered Coated Fabrics'},
+  {first:'Dummy',last:'Fabrics5',role:'GM',productArea:'Engineered Coated Fabrics'}
 ];
-
-// For team view stats, only count the real 21 Antivibration members
-const REAL_TEAM = TEAM.filter(m => m.productArea === 'Antivibration Solutions');
+const REAL_TEAM = TEAM.filter(m => m.productArea==='Antivibration Solutions');
 
 const RC = {
-  Sales:       {bg:'#E6F1FB', color:'#0C447C', border:'#85B7EB'},
-  Engineering: {bg:'#EAF3DE', color:'#27500A', border:'#97C459'},
-  Internal:    {bg:'#EEEDFE', color:'#3C3489', border:'#AFA9EC'},
-  GM:          {bg:'#FAEEDA', color:'#633806', border:'#EF9F27'},
-  ID:          {bg:'#E1F5EE', color:'#085041', border:'#5DCAA5'},
-  Other:       {bg:'#F1EFE8', color:'#444441', border:'#B4B2A9'}
+  Sales:{bg:'#E6F1FB',color:'#0C447C',border:'#85B7EB'},
+  Engineering:{bg:'#EAF3DE',color:'#27500A',border:'#97C459'},
+  Internal:{bg:'#EEEDFE',color:'#3C3489',border:'#AFA9EC'},
+  GM:{bg:'#FAEEDA',color:'#633806',border:'#EF9F27'},
+  ID:{bg:'#E1F5EE',color:'#085041',border:'#5DCAA5'},
+  Other:{bg:'#F1EFE8',color:'#444441',border:'#B4B2A9'}
 };
 
-const DAYS   = ['Tue 22 Sep','Wed 23 Sep','Thu 24 Sep','Fri 25 Sep'];
-const SPACES = { private: ['Private room A','Private room B'], informal: ['Informal space 1','Informal space 2','Informal space 3'] };
-const ALL_SPACES = [...SPACES.private, ...SPACES.informal];
-const ALL_TIMES  = ['09:00','09:30','10:00','10:30','11:00','11:30','12:00','12:30','13:00','13:30','14:00','14:30','15:00','15:30','16:00','16:30'];
-const FRI_TIMES  = ALL_TIMES.filter(t => t <= '15:30');
+const DAYS      = ['Tue 22 Sep','Wed 23 Sep','Thu 24 Sep','Fri 25 Sep'];
+const SPACES    = {private:['Private room A','Private room B'],informal:['Informal space 1','Informal space 2','Informal space 3']};
+const ALL_SPACES= [...SPACES.private,...SPACES.informal];
+const ALL_TIMES = ['09:00','09:30','10:00','10:30','11:00','11:30','12:00','12:30','13:00','13:30','14:00','14:30','15:00','15:30','16:00','16:30'];
+const FRI_TIMES = ALL_TIMES.filter(t=>t<='15:30');
 
-function getTimesForDay(d) { return d === 'Fri 25 Sep' ? FRI_TIMES : ALL_TIMES; }
-function fullName(m)   { return m.last ? `${m.first} ${m.last}` : m.first; }
-function initials(m)   { return m.last ? (m.first[0]+m.last[0]).toUpperCase() : m.first.slice(0,2).toUpperCase(); }
-function roleLabel(r)  { return r==='ID'?'I & D': r==='Internal'?'Internal sales': r; }
-function spaceType(s)  { return SPACES.private.includes(s) ? 'private' : 'informal'; }
-function getInitialsStr(n) { const p=n.trim().split(' '); return p.length>1?(p[0][0]+p[p.length-1][0]).toUpperCase():n.slice(0,2).toUpperCase(); }
+function getTimesForDay(d){ return d==='Fri 25 Sep'?FRI_TIMES:ALL_TIMES; }
+function fullName(m){ return m.last?`${m.first} ${m.last}`:m.first; }
+function initials(m){ return m.last?(m.first[0]+m.last[0]).toUpperCase():m.first.slice(0,2).toUpperCase(); }
+function roleLabel(r){ return r==='ID'?'I & D':r==='Internal'?'Internal sales':r; }
+function spaceType(s){ return SPACES.private.includes(s)?'private':'informal'; }
+function getInitialsStr(n){ const p=n.trim().split(' '); return p.length>1?(p[0][0]+p[p.length-1][0]).toUpperCase():n.slice(0,2).toUpperCase(); }
 
-let currentDay     = 'Tue 22 Sep';
-let selectedSlot   = null;
-let selectedSpace  = null;
-let selectedHosts  = [];
-let editHosts      = [];
-let editingBooking = null;
-let calSpace       = 'all';
-let bookings       = [];
+let currentDay='Tue 22 Sep', selectedSlot=null, selectedSpace=null;
+let selectedHosts=[], editHosts=[], editingBooking=null, calSpace='all';
+let bookings=[], availability=[];
 
-// ── NOTION API (via Cloudflare proxy) ────────────────────────────────────
-async function notionCall(userMessage) {
+// ── NOTION PROXY (Cloudflare function — uses NOTION_TOKEN env var) ────────
+function richText(str){ return [{type:'text',text:{content:str||''}}]; }
+
+async function notionProxy(path, method, body) {
   const res = await fetch('/api/notion', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 1500,
-      mcp_servers: [{type:'url', url:'https://mcp.notion.com/mcp', name:'notion'}],
-      messages: [{role:'user', content: userMessage}]
-    })
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({path, method, body})
   });
-  if (!res.ok) throw new Error(`Proxy error ${res.status}`);
-  const data = await res.json();
-  const toolResults = data.content.filter(i=>i.type==='mcp_tool_result').map(i=>i.content?.[0]?.text||'').join('\n');
-  const text = data.content.filter(i=>i.type==='text').map(i=>i.text).join('\n');
-  return { toolResults, text };
+  if (!res.ok) { const e=await res.text(); throw new Error(`Proxy ${res.status}: ${e}`); }
+  return res.json();
 }
 
+// ── LOAD ─────────────────────────────────────────────────────────────────
 async function loadBookings() {
-  document.getElementById('slot-grid').innerHTML = '<div class="loading-bar" style="grid-column:1/-1;">Syncing with Notion…</div>';
+  document.getElementById('slot-grid').innerHTML='<div class="loading-bar" style="grid-column:1/-1;">Syncing with Notion…</div>';
   try {
-    const { toolResults } = await notionCall(
-      `Query ALL pages from the Notion database with data source ID "${NOTION_DS}". ` +
-      `Return ONLY a JSON array, no markdown, no explanation. Each item: ` +
-      `{pageId, visitorName, company, day, time, space, spaceType, topic, productArea, attendees, railTeam, notes}`
-    );
-    const match = toolResults.replace(/```json|```/g,'').match(/\[[\s\S]*\]/);
-    bookings = match ? JSON.parse(match[0]) : [];
+    let allPages=[], cursor;
+    do {
+      const reqBody={page_size:100};
+      if (cursor) reqBody.start_cursor=cursor;
+      const data=await notionProxy(`/v1/databases/${NOTION_DB}/query`,'POST',reqBody);
+      allPages=allPages.concat(data.results||[]);
+      cursor=data.has_more?data.next_cursor:undefined;
+    } while(cursor);
+    bookings=allPages.map(page=>{
+      const p=page.properties;
+      const g=(name,fb='')=>{
+        const prop=p[name]; if(!prop) return fb;
+        if(prop.type==='title')     return prop.title.map(t=>t.plain_text).join('')||fb;
+        if(prop.type==='rich_text') return prop.rich_text.map(t=>t.plain_text).join('')||fb;
+        if(prop.type==='select')    return prop.select?.name||fb;
+        if(prop.type==='number')    return prop.number??fb;
+        return fb;
+      };
+      return {
+        pageId:page.id, visitorName:g('Visitor name')||g('Name'),
+        company:g('Company'), day:g('Day'), time:g('Time'),
+        space:g('Space'), spaceType:g('Space type'), topic:g('Topic'),
+        productArea:g('Product area'), attendees:g('Attendees','1'),
+        railTeam:g('Rail team'), notes:g('Notes')
+      };
+    });
   } catch(e) {
-    console.error(e);
-    showError('Could not load bookings from Notion.');
-    bookings = [];
+    console.error(e); showError(`Could not load from Notion: ${e.message}`); bookings=[];
   }
   renderSlots(); renderSpacePills(); updateStats();
   if (document.getElementById('view-list').classList.contains('active'))     renderList();
@@ -540,178 +517,216 @@ async function loadBookings() {
   if (document.getElementById('view-team').classList.contains('active'))     renderTeam();
 }
 
-async function saveToNotion(b) {
-  const btn = document.getElementById('book-btn');
-  btn.disabled = true; btn.textContent = 'Saving to Notion…';
+async function loadAvailability() {
   try {
-    await notionCall(
-      `Create a page in Notion database data source "${NOTION_DS}" with:
-Visitor name (title): "${b.name}"
-Company: "${b.company}"
-Day: "${b.day}"
-Time: "${b.time}"
-Space: "${b.space}"
-Space type: "${b.spaceType}"
-Topic: "${b.topic||''}"
-Product area: "${b.productArea||''}"
-Attendees: "${b.attendees}"
-Rail team: "${b.hosts.join(', ')}"
-Notes: "${b.notes||''}"
-Confirm when done.`
-    );
-    return true;
-  } catch(e) { console.error(e); return false; }
-  finally { btn.disabled = false; btn.innerHTML = '<i class="ti ti-check"></i> Confirm booking'; }
+    let allPages=[], cursor;
+    do {
+      const reqBody={page_size:100};
+      if(cursor) reqBody.start_cursor=cursor;
+      const data=await notionProxy(`/v1/databases/${AVAIL_DB}/query`,'POST',reqBody);
+      allPages=allPages.concat(data.results||[]);
+      cursor=data.has_more?data.next_cursor:undefined;
+    } while(cursor);
+    availability=allPages.map(page=>{
+      const p=page.properties;
+      const g=(name,fb='')=>{
+        const prop=p[name]; if(!prop) return fb;
+        if(prop.type==='title')     return prop.title.map(t=>t.plain_text).join('')||fb;
+        if(prop.type==='rich_text') return prop.rich_text.map(t=>t.plain_text).join('')||fb;
+        if(prop.type==='select')    return prop.select?.name||fb;
+        return fb;
+      };
+      return {pageId:page.id,person:g('Person'),day:g('Day'),startTime:g('Start time'),endTime:g('End time'),reason:g('Reason')};
+    });
+  } catch(e) { console.error(e); availability=[]; }
+}
+
+async function loadAll() { await loadBookings(); await loadAvailability(); renderHostPills(); }
+
+// ── SAVE / UPDATE / DELETE ────────────────────────────────────────────────
+async function saveToNotion(b) {
+  const btn=document.getElementById('book-btn');
+  btn.disabled=true; btn.textContent='Saving…';
+  try {
+    const data=await notionProxy('/v1/pages','POST',{
+      parent:{database_id:NOTION_DB},
+      properties:{
+        'Visitor name':{title:richText(b.name)},
+        'Company':     {rich_text:richText(b.company)},
+        'Day':         {select:{name:b.day}},
+        'Time':        {rich_text:richText(b.time)},
+        'Space':       {select:{name:b.space}},
+        'Space type':  {select:{name:b.spaceType}},
+        'Topic':       {select:{name:b.topic||'Other'}},
+        'Product area':{select:{name:b.productArea||'Antivibration Solutions'}},
+        'Attendees':   {rich_text:richText(String(b.attendees||1))},
+        'Rail team':   {rich_text:richText(b.hosts.join(', '))},
+        'Notes':       {rich_text:richText(b.notes||'')}
+      }
+    });
+    b.pageId=data.id; return true;
+  } catch(e) { console.error(e); showError(`Save failed: ${e.message}`); return false; }
+  finally { btn.disabled=false; btn.innerHTML='<i class="ti ti-check"></i> Confirm booking'; }
 }
 
 async function updateInNotion(pageId, u) {
-  await notionCall(
-    `Update Notion page with ID "${pageId}" — set these properties:
-Visitor name (title): "${u.name}"
-Company: "${u.company}"
-Space: "${u.space}"
-Space type: "${spaceType(u.space)}"
-Topic: "${u.topic||''}"
-Product area: "${u.productArea||''}"
-Attendees: "${u.attendees}"
-Rail team: "${u.hosts.join(', ')}"
-Notes: "${u.notes||''}"
-Confirm when done.`
-  );
+  await notionProxy(`/v1/pages/${pageId}`,'PATCH',{
+    properties:{
+      'Visitor name':{title:richText(u.name)},
+      'Company':     {rich_text:richText(u.company)},
+      'Space':       {select:{name:u.space}},
+      'Space type':  {select:{name:spaceType(u.space)}},
+      'Topic':       {select:{name:u.topic||'Other'}},
+      'Product area':{select:{name:u.productArea||'Antivibration Solutions'}},
+      'Attendees':   {rich_text:richText(String(u.attendees||1))},
+      'Rail team':   {rich_text:richText(u.hosts.join(', '))},
+      'Notes':       {rich_text:richText(u.notes||'')}
+    }
+  });
 }
 
 async function deleteFromNotion(pageId) {
-  try { await notionCall(`Archive (delete) Notion page ID "${pageId}". Confirm when done.`); return true; }
+  try { await notionProxy(`/v1/pages/${pageId}`,'PATCH',{archived:true}); return true; }
   catch(e) { return false; }
 }
 
-function getBookingsAt(day, time) { return bookings.filter(b => b.day===day && b.time===time); }
-function isFree(day, time, space) { return !bookings.some(b => b.day===day && b.time===time && b.space===space); }
-
-function showMsg(type, html) {
-  const el = document.getElementById(type+'-msg');
-  el.style.display='block'; el.innerHTML=html;
-  setTimeout(()=>el.style.display='none', 6000);
-}
-function showError(msg) { showMsg('error', `<i class="ti ti-alert-circle"></i> ${msg}`); }
-
-function topicBadge(t) {
-  const m = {'Product demo':'badge-blue','Partnership discussion':'badge-green','Technical briefing':'badge-gray',
-    'Commercial negotiation':'badge-amber','Press interview':'badge-amber','General networking':'badge-teal','Other':'badge-gray'};
-  return m[t] || 'badge-gray';
-}
-
-function productAreaBadge(pa) {
-  const m = {'Antivibration Solutions':'badge-blue','Sealing Solutions':'badge-green',
-    'Fluid Handling':'badge-orange','Engineered Coated Fabrics':'badge-purple'};
-  return m[pa] || 'badge-gray';
+async function saveAvailability(a) {
+  try {
+    const data=await notionProxy('/v1/pages','POST',{
+      parent:{database_id:AVAIL_DB},
+      properties:{
+        'Person':    {title:richText(a.person)},
+        'Day':       {select:{name:a.day}},
+        'Start time':{rich_text:richText(a.startTime)},
+        'End time':  {rich_text:richText(a.endTime)},
+        'Reason':    {rich_text:richText(a.reason||'')}
+      }
+    });
+    a.pageId=data.id; return true;
+  } catch(e) { console.error(e); return false; }
 }
 
-// ── PRODUCT AREA PILLS ───────────────────────────────────────────────────
+async function deleteAvailability(pageId) {
+  try { await notionProxy(`/v1/pages/${pageId}`,'PATCH',{archived:true}); return true; }
+  catch(e) { return false; }
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────
+function getBookingsAt(day,time){ return bookings.filter(b=>b.day===day&&b.time===time); }
+function isFree(day,time,space){ return !bookings.some(b=>b.day===day&&b.time===time&&b.space===space); }
+function timesOverlap(slotTime,startTime,endTime){
+  if(!startTime||!endTime) return false;
+  const toMin=t=>{const[h,m]=t.split(':').map(Number);return h*60+m;};
+  const ss=toMin(slotTime),se=ss+30,bs=toMin(startTime),be=toMin(endTime);
+  return ss<be&&bs<se;
+}
+function unavailableHostsAt(day,time){
+  const s=new Set();
+  availability.filter(a=>a.day===day&&timesOverlap(time,a.startTime,a.endTime)).forEach(a=>s.add(a.person));
+  return s;
+}
+function busyHostsAt(day,time){
+  const s=new Set();
+  getBookingsAt(day,time).forEach(b=>{
+    (Array.isArray(b.hosts)?b.hosts:(b.railTeam||'').split(',').map(h=>h.trim()).filter(Boolean)).forEach(h=>s.add(h));
+  });
+  unavailableHostsAt(day,time).forEach(h=>s.add(h));
+  return s;
+}
+function showMsg(type,html){ const el=document.getElementById(type+'-msg'); el.style.display='block'; el.innerHTML=html; setTimeout(()=>el.style.display='none',6000); }
+function showError(msg){ showMsg('error',`<i class="ti ti-alert-circle"></i> ${msg}`); }
+function showAvailMsg(type,html){ const el=document.getElementById('avail-'+type+'-msg'); el.style.display='block'; el.innerHTML=html; setTimeout(()=>el.style.display='none',6000); }
+function topicBadge(t){ const m={'Product demo':'badge-blue','Partnership discussion':'badge-green','Technical briefing':'badge-gray','Commercial negotiation':'badge-amber','Press interview':'badge-amber','General networking':'badge-teal','Other':'badge-gray'}; return m[t]||'badge-gray'; }
+function productAreaBadge(pa){ const m={'Antivibration Solutions':'badge-blue','Sealing Solutions':'badge-green','Fluid Handling':'badge-orange','Engineered Coated Fabrics':'badge-purple'}; return m[pa]||'badge-gray'; }
+
+// ── PRODUCT AREA PILLS ────────────────────────────────────────────────────
 function renderProductAreaPills(prefix) {
-  const hidden = document.getElementById(prefix+'-product-area');
-  const wrap   = document.getElementById(prefix+'-product-area-pills');
-  if (!hidden || !wrap) return;
-  const current = hidden.value;
-  wrap.innerHTML = PRODUCT_AREAS.map(a => {
-    const isSel  = current===a;
-    const faded  = current && !isSel;
-    const colors = PA_COLORS[a];
-    const style  = isSel ? `background:${colors.bg};border-color:${colors.border};color:${colors.color};` : '';
+  const hidden=document.getElementById(prefix+'-product-area');
+  const wrap=document.getElementById(prefix+'-product-area-pills');
+  if(!hidden||!wrap) return;
+  const current=hidden.value;
+  wrap.innerHTML=PRODUCT_AREAS.map(a=>{
+    const isSel=current===a, faded=current&&!isSel, colors=PA_COLORS[a];
+    const style=isSel?`background:${colors.bg};border-color:${colors.border};color:${colors.color};`:'';
     return `<button type="button" class="pa-pill${isSel?' pa-selected':''}${faded?' pa-faded':''}" style="${style}"
       onclick="selectProductArea('${prefix}','${a.replace(/'/g,"\\'")}')">${a}</button>`;
   }).join('');
 }
 
-function selectProductArea(prefix, area) {
-  const hidden = document.getElementById(prefix+'-product-area');
-  hidden.value = (hidden.value===area) ? '' : area;
+function selectProductArea(prefix,area) {
+  const hidden=document.getElementById(prefix+'-product-area');
+  hidden.value=(hidden.value===area)?'':area;
   renderProductAreaPills(prefix);
-  if (prefix==='f') {
-    // Drop any selected hosts not in the new product area
-    selectedHosts = selectedHosts.filter(name => {
-      const m = TEAM.find(x => fullName(x)===name);
-      return m && m.productArea===hidden.value;
-    });
+  if(prefix==='f'){
+    selectedHosts=selectedHosts.filter(n=>{const m=TEAM.find(x=>fullName(x)===n);return m&&m.productArea===hidden.value;});
     renderHostPills();
-  } else if (prefix==='edit') {
-    editHosts = editHosts.filter(name => {
-      const m = TEAM.find(x => fullName(x)===name);
-      return m && m.productArea===hidden.value;
-    });
+  } else if(prefix==='edit'){
+    editHosts=editHosts.filter(n=>{const m=TEAM.find(x=>fullName(x)===n);return m&&m.productArea===hidden.value;});
     renderEditHostPills();
   }
 }
 
-// ── HOST PILLS (booking form) ────────────────────────────────────────────
+// ── HOST PILLS ────────────────────────────────────────────────────────────
 function renderHostPills() {
-  const area     = document.getElementById('f-product-area').value;
-  const emptyEl  = document.getElementById('host-pills-empty');
-  const groupsEl = document.getElementById('host-pills-groups');
-  if (!area) {
-    emptyEl.style.display='block'; groupsEl.style.display='none';
-    renderSelectedTags(); return;
-  }
+  const area=document.getElementById('f-product-area').value;
+  const emptyEl=document.getElementById('host-pills-empty');
+  const groupsEl=document.getElementById('host-pills-groups');
+  if(!area){ emptyEl.style.display='block'; groupsEl.style.display='none'; renderSelectedTags(); return; }
   emptyEl.style.display='none'; groupsEl.style.display='block';
-  const teamForArea = TEAM.filter(m => m.productArea===area);
-  const groups = {
-    sales:       teamForArea.filter(m=>['Sales','Internal','GM'].includes(m.role)),
-    engineering: teamForArea.filter(m=>m.role==='Engineering'),
-    other:       teamForArea.filter(m=>['ID','Other'].includes(m.role))
+  const teamForArea=TEAM.filter(m=>m.productArea===area);
+  const groups={
+    sales:teamForArea.filter(m=>['Sales','Internal','GM'].includes(m.role)),
+    engineering:teamForArea.filter(m=>m.role==='Engineering'),
+    other:teamForArea.filter(m=>['ID','Other'].includes(m.role))
   };
-  ['sales','engineering','other'].forEach(g => {
-    const el = document.getElementById(`host-pills-${g}`);
-    if (!el) return;
-    el.innerHTML = groups[g].map(m => {
-      const name  = fullName(m);
-      const rc    = RC[m.role]||RC.Other;
-      const isSel = selectedHosts.includes(name);
-      return `<button class="host-pill" onclick="toggleHost('${name.replace(/'/g,"\\'")}')"
-        style="${isSel?`background:${rc.bg};border-color:${rc.border};color:${rc.color};font-weight:500;`:''}"
-      >${m.first} ${m.last?m.last[0]+'.':''}</button>`;
+  const bookedBusy=selectedSlot?(()=>{const s=new Set();getBookingsAt(currentDay,selectedSlot).forEach(b=>{(Array.isArray(b.hosts)?b.hosts:(b.railTeam||'').split(',').map(h=>h.trim()).filter(Boolean)).forEach(h=>s.add(h));});return s;})():new Set();
+  const offBusy=selectedSlot?unavailableHostsAt(currentDay,selectedSlot):new Set();
+  ['sales','engineering','other'].forEach(g=>{
+    const el=document.getElementById(`host-pills-${g}`); if(!el) return;
+    el.innerHTML=groups[g].map(m=>{
+      const name=fullName(m), rc=RC[m.role]||RC.Other, isSel=selectedHosts.includes(name);
+      const isBooked=bookedBusy.has(name)&&!isSel, isOff=offBusy.has(name)&&!isSel, isBusy=isBooked||isOff;
+      const style=isBusy?'opacity:0.4;text-decoration:line-through;cursor:not-allowed;'
+        :isSel?`background:${rc.bg};border-color:${rc.border};color:${rc.color};font-weight:500;`:'';
+      const icon=isOff?'calendar-off':'lock';
+      return `<button class="host-pill" ${isBusy?'disabled':''}
+        onclick="${isBusy?'':  `toggleHost('${name.replace(/'/g,"\\'")}')`}"
+        style="${style}">${m.first} ${m.last?m.last[0]+'.':''}${isBusy?` <i class="ti ti-${icon}" style="font-size:10px;"></i>`:''}</button>`;
     }).join('');
   });
   renderSelectedTags();
 }
 
 function renderSelectedTags() {
-  const row = document.getElementById('selected-hosts-row');
-  row.innerHTML = selectedHosts.map(h => {
-    const m  = TEAM.find(x=>fullName(x)===h);
-    const rc = m?(RC[m.role]||RC.Other):RC.Other;
+  const row=document.getElementById('selected-hosts-row');
+  row.innerHTML=selectedHosts.map(h=>{
+    const m=TEAM.find(x=>fullName(x)===h), rc=m?(RC[m.role]||RC.Other):RC.Other;
     return `<span class="selected-host-chip" style="background:${rc.bg};color:${rc.color};border:0.5px solid ${rc.border};">${h} <span onclick="toggleHost('${h.replace(/'/g,"\\'")}')" style="cursor:pointer;opacity:.6;margin-left:2px;">✕</span></span>`;
   }).join('');
 }
 
-function toggleHost(name) {
-  if (selectedHosts.includes(name)) selectedHosts = selectedHosts.filter(h=>h!==name);
-  else selectedHosts.push(name);
+function toggleHost(name){
+  if(selectedHosts.includes(name)) selectedHosts=selectedHosts.filter(h=>h!==name);
+  else { if(selectedSlot&&busyHostsAt(currentDay,selectedSlot).has(name)){showError(`${name} is already booked at this time.`);return;} selectedHosts.push(name); }
   renderHostPills();
 }
 
-// ── HOST PILLS (edit modal) ──────────────────────────────────────────────
 function renderEditHostPills() {
-  const area     = document.getElementById('edit-product-area').value;
-  const emptyEl  = document.getElementById('edit-host-pills-empty');
-  const groupsEl = document.getElementById('edit-host-pills-groups');
-  if (!area) {
-    emptyEl.style.display='block'; groupsEl.style.display='none';
-    renderEditSelectedTags(); return;
-  }
+  const area=document.getElementById('edit-product-area').value;
+  const emptyEl=document.getElementById('edit-host-pills-empty');
+  const groupsEl=document.getElementById('edit-host-pills-groups');
+  if(!area){ emptyEl.style.display='block'; groupsEl.style.display='none'; renderEditSelectedTags(); return; }
   emptyEl.style.display='none'; groupsEl.style.display='block';
-  const teamForArea = TEAM.filter(m => m.productArea===area);
-  const groups = {
-    sales:       teamForArea.filter(m=>['Sales','Internal','GM'].includes(m.role)),
-    engineering: teamForArea.filter(m=>m.role==='Engineering'),
-    other:       teamForArea.filter(m=>['ID','Other'].includes(m.role))
+  const teamForArea=TEAM.filter(m=>m.productArea===area);
+  const groups={
+    sales:teamForArea.filter(m=>['Sales','Internal','GM'].includes(m.role)),
+    engineering:teamForArea.filter(m=>m.role==='Engineering'),
+    other:teamForArea.filter(m=>['ID','Other'].includes(m.role))
   };
-  ['sales','engineering','other'].forEach(g => {
-    const el = document.getElementById(`edit-host-pills-${g}`);
-    if (!el) return;
-    el.innerHTML = groups[g].map(m => {
-      const name  = fullName(m);
-      const rc    = RC[m.role]||RC.Other;
-      const isSel = editHosts.includes(name);
+  ['sales','engineering','other'].forEach(g=>{
+    const el=document.getElementById(`edit-host-pills-${g}`); if(!el) return;
+    el.innerHTML=groups[g].map(m=>{
+      const name=fullName(m),rc=RC[m.role]||RC.Other,isSel=editHosts.includes(name);
       return `<button class="host-pill" onclick="toggleEditHost('${name.replace(/'/g,"\\'")}')"
         style="${isSel?`background:${rc.bg};border-color:${rc.border};color:${rc.color};font-weight:500;`:''}"
       >${m.first} ${m.last?m.last[0]+'.':''}</button>`;
@@ -720,272 +735,211 @@ function renderEditHostPills() {
   renderEditSelectedTags();
 }
 
-function renderEditSelectedTags() {
-  const row = document.getElementById('edit-selected-hosts-row');
-  row.innerHTML = editHosts.map(h => {
-    const m  = TEAM.find(x=>fullName(x)===h);
-    const rc = m?(RC[m.role]||RC.Other):RC.Other;
+function renderEditSelectedTags(){
+  const row=document.getElementById('edit-selected-hosts-row');
+  row.innerHTML=editHosts.map(h=>{
+    const m=TEAM.find(x=>fullName(x)===h),rc=m?(RC[m.role]||RC.Other):RC.Other;
     return `<span class="selected-host-chip" style="background:${rc.bg};color:${rc.color};border:0.5px solid ${rc.border};">${h} <span onclick="toggleEditHost('${h.replace(/'/g,"\\'")}')" style="cursor:pointer;opacity:.6;margin-left:2px;">✕</span></span>`;
   }).join('');
 }
 
-function toggleEditHost(name) {
-  if (editHosts.includes(name)) editHosts = editHosts.filter(h=>h!==name);
-  else editHosts.push(name);
+function toggleEditHost(name){
+  editHosts=editHosts.includes(name)?editHosts.filter(h=>h!==name):[...editHosts,name];
   renderEditHostPills();
 }
 
-// ── SLOT / SPACE / DAY ───────────────────────────────────────────────────
-function selectDay(el, day) {
-  document.querySelectorAll('.day-tab').forEach(t=>t.classList.remove('active'));
-  el.classList.add('active');
-  currentDay=day; selectedSlot=null; selectedSpace=null;
-  renderSlots(); renderSpacePills();
-}
-
-function selectSlot(time) {
-  if (selectedSlot===time) { selectedSlot=null; selectedSpace=null; }
-  else { selectedSlot=time; selectedSpace=null; }
-  renderSlots(); renderSpacePills();
-}
-
-function selectSpace(space) {
-  selectedSpace = selectedSpace===space ? null : space;
-  renderSpacePills();
-}
-
-function selectCalSpace(el, space) {
-  document.querySelectorAll('.cal-space-tab').forEach(t=>t.classList.remove('active'));
-  el.classList.add('active');
-  calSpace=space; renderCalendar();
-}
-
-function populateHostFilter() {
-  const sel = document.getElementById('filter-host');
-  sel.innerHTML = '<option value="">All hosts</option>' +
-    REAL_TEAM.map(m=>`<option>${fullName(m)}</option>`).join('');
-}
-
-// ── RENDER: SLOTS ────────────────────────────────────────────────────────
-function renderSlots() {
-  const grid  = document.getElementById('slot-grid');
-  const times = getTimesForDay(currentDay);
-  grid.innerHTML = times.map(t => {
-    const bkgs  = getBookingsAt(currentDay, t);
-    const taken = bkgs.map(b => b.space);
-    const freeP = SPACES.private.filter(s=>!taken.includes(s)).length;
-    const freeI = SPACES.informal.filter(s=>!taken.includes(s)).length;
-    const total = freeP+freeI;
-    const isSel = selectedSlot===t;
-    let cls = 'slot';
-    if (total===0)          cls+=' fully-taken';
-    else if (bkgs.length>0) cls+=' partial';
-    if (isSel && total>0)   cls+=' selected';
-    const avail = total===0
-      ? '<div class="slot-avail">Full</div>'
-      : `<div class="slot-avail">${[freeP>0?freeP+'P':'',freeI>0?freeI+'I':''].filter(Boolean).join(' · ')}</div>`;
+// ── SLOTS / SPACES / DAYS ─────────────────────────────────────────────────
+function renderSlots(){
+  const grid=document.getElementById('slot-grid'), times=getTimesForDay(currentDay);
+  grid.innerHTML=times.map(t=>{
+    const bkgs=getBookingsAt(currentDay,t), taken=bkgs.map(b=>b.space);
+    const freeP=SPACES.private.filter(s=>!taken.includes(s)).length;
+    const freeI=SPACES.informal.filter(s=>!taken.includes(s)).length;
+    const total=freeP+freeI, isSel=selectedSlot===t;
+    let cls='slot';
+    if(total===0) cls+=' fully-taken'; else if(bkgs.length>0) cls+=' partial';
+    if(isSel&&total>0) cls+=' selected';
+    const avail=total===0?'<div class="slot-avail">Full</div>'
+      :`<div class="slot-avail">${[freeP>0?freeP+'P':'',freeI>0?freeI+'I':''].filter(Boolean).join(' · ')}</div>`;
     return `<button class="${cls}" onclick="selectSlot('${t}')" ${total===0?'disabled':''}>${t}${avail}</button>`;
   }).join('');
 }
 
-// ── RENDER: SPACE PILLS ──────────────────────────────────────────────────
-function renderSpacePills() {
-  const card  = document.getElementById('space-card');
-  const pills = document.getElementById('space-pills');
-  if (!selectedSlot) { card.style.display='none'; return; }
+function renderSpacePills(){
+  const card=document.getElementById('space-card'), pills=document.getElementById('space-pills');
+  if(!selectedSlot){card.style.display='none';return;}
   card.style.display='block';
-  pills.innerHTML = ALL_SPACES.map(s => {
-    const free = isFree(currentDay, selectedSlot, s);
-    const type = spaceType(s);
-    const sel  = selectedSpace===s ? (type==='private'?' selected-private':' selected-informal') : '';
-    const icon = type==='private' ? 'ti-lock' : 'ti-armchair';
+  pills.innerHTML=ALL_SPACES.map(s=>{
+    const free=isFree(currentDay,selectedSlot,s), type=spaceType(s);
+    const sel=selectedSpace===s?(type==='private'?' selected-private':' selected-informal'):'';
+    const icon=type==='private'?'ti-lock':'ti-armchair';
     return `<button class="space-pill${sel}${!free?' disabled':''}" onclick="selectSpace('${s}')" ${!free?'disabled':''}>
       <i class="ti ${icon}" style="font-size:14px;vertical-align:-1px;margin-right:4px;"></i>${s}</button>`;
   }).join('');
 }
 
-// ── RENDER: CALENDAR ─────────────────────────────────────────────────────
-function renderCalendar() {
-  const tbl    = document.getElementById('cal-table');
-  const spaces = calSpace==='all' ? ALL_SPACES : [calSpace];
-  const total  = spaces.length;
-  let html = '<thead><tr><th class="time-col">Time</th>';
-  DAYS.forEach(d => html += `<th>${d}</th>`);
-  html += '</tr></thead><tbody>';
-  ALL_TIMES.forEach(t => {
-    html += `<tr><td class="time-cell">${t}</td>`;
-    DAYS.forEach(day => {
-      const isFri = day==='Fri 25 Sep';
-      if (isFri && !FRI_TIMES.includes(t)) {
-        html += `<td><div class="cal-cell empty-day" style="font-size:10px;text-align:center;padding-top:10px;color:#aaa;">—</div></td>`;
-        return;
-      }
-      const bkgsHere  = bookings.filter(b=>b.day===day && b.time===t && spaces.includes(b.space));
-      const takenSp   = bkgsHere.map(b=>b.space);
-      const freeCount = spaces.filter(s=>!takenSp.includes(s)).length;
-      let cls='cal-cell', label='';
-      if (freeCount===total)  { cls+=' free-all'; label=total===1?'Available':`${freeCount} of ${total} free`; }
-      else if (freeCount===0) { cls+=' full'; label='Fully booked'; }
-      else                    { cls+=' partial'; label=`${freeCount} of ${total} free`; }
-      const names = bkgsHere.map(b =>
-        `<div class="cal-booking">${b.visitorName||b.name||''}${calSpace==='all'?' · '+b.space.replace('Private room','Priv').replace('Informal space','Inf'):''}</div>`
-      ).join('');
-      html += `<td><div class="${cls}">${label}${names}</div></td>`;
-    });
-    html += '</tr>';
-  });
-  tbl.innerHTML = html + '</tbody>';
+function selectDay(el,day){
+  document.querySelectorAll('.day-tab').forEach(t=>t.classList.remove('active')); el.classList.add('active');
+  currentDay=day; selectedSlot=null; selectedSpace=null; renderSlots(); renderSpacePills();
+}
+function selectSlot(time){
+  if(selectedSlot===time){selectedSlot=null;selectedSpace=null;}
+  else{
+    selectedSlot=time; selectedSpace=null;
+    const busy=busyHostsAt(currentDay,time);
+    const conf=selectedHosts.filter(h=>busy.has(h));
+    if(conf.length){selectedHosts=selectedHosts.filter(h=>!busy.has(h));showError(`Removed ${conf.join(', ')} — conflict at this time.`);}
+  }
+  renderSlots(); renderSpacePills(); renderHostPills();
+}
+function selectSpace(space){ selectedSpace=selectedSpace===space?null:space; renderSpacePills(); }
+function selectCalSpace(el,space){
+  document.querySelectorAll('.cal-space-tab').forEach(t=>t.classList.remove('active')); el.classList.add('active');
+  calSpace=space; renderCalendar();
 }
 
-// ── BOOK ─────────────────────────────────────────────────────────────────
-async function bookMeeting() {
-  const name        = document.getElementById('f-name').value.trim();
-  const company     = document.getElementById('f-company').value.trim();
-  const topic       = document.getElementById('f-topic').value;
-  const productArea = document.getElementById('f-product-area').value;
-  const attendees   = document.getElementById('f-attendees').value;
-  const notes       = document.getElementById('f-notes').value.trim();
-  if (!name)          { alert('Please enter a visitor name.'); return; }
-  if (!company)       { alert('Please enter a company.'); return; }
-  if (!selectedSlot)  { alert('Please select a time slot.'); return; }
-  if (!selectedSpace) { alert('Please select a meeting space.'); return; }
+function populateHostFilter(){
+  const sel=document.getElementById('filter-host');
+  sel.innerHTML='<option value="">All hosts</option>'+REAL_TEAM.map(m=>`<option>${fullName(m)}</option>`).join('');
+}
 
-  const booking = { name, company, day:currentDay, time:selectedSlot, space:selectedSpace,
-    spaceType:spaceType(selectedSpace), topic, productArea, attendees, notes, hosts:[...selectedHosts] };
-  const ok = await saveToNotion(booking);
-  if (!ok) { showError('Failed to save to Notion. Please try again.'); return; }
+// ── RENDER: CALENDAR ──────────────────────────────────────────────────────
+function renderCalendar(){
+  const tbl=document.getElementById('cal-table');
+  const spaces=calSpace==='all'?ALL_SPACES:[calSpace], total=spaces.length;
+  let html='<thead><tr><th class="time-col">Time</th>';
+  DAYS.forEach(d=>html+=`<th>${d}</th>`);
+  html+='</tr></thead><tbody>';
+  ALL_TIMES.forEach(t=>{
+    html+=`<tr><td class="time-cell">${t}</td>`;
+    DAYS.forEach(day=>{
+      const isFri=day==='Fri 25 Sep';
+      if(isFri&&!FRI_TIMES.includes(t)){html+=`<td><div class="cal-cell empty-day" style="font-size:10px;text-align:center;padding-top:10px;color:#aaa;">—</div></td>`;return;}
+      const bkgsHere=bookings.filter(b=>b.day===day&&b.time===t&&spaces.includes(b.space));
+      const takenSp=bkgsHere.map(b=>b.space), freeCount=spaces.filter(s=>!takenSp.includes(s)).length;
+      let cls='cal-cell', label='';
+      if(freeCount===total){cls+=' free-all';label=total===1?'Available':`${freeCount} of ${total} free`;}
+      else if(freeCount===0){cls+=' full';label='Fully booked';}
+      else{cls+=' partial';label=`${freeCount} of ${total} free`;}
+      const names=bkgsHere.map(b=>`<div class="cal-booking">${b.visitorName||b.name||''}${calSpace==='all'?' · '+b.space.replace('Private room','Priv').replace('Informal space','Inf'):''}</div>`).join('');
+      html+=`<td><div class="${cls}">${label}${names}</div></td>`;
+    });
+    html+='</tr>';
+  });
+  tbl.innerHTML=html+'</tbody>';
+}
 
-  bookings.push({...booking, visitorName:name});
-  document.getElementById('f-name').value='';
-  document.getElementById('f-company').value='';
-  document.getElementById('f-topic').value='';
-  document.getElementById('f-product-area').value='';
+// ── BOOK ──────────────────────────────────────────────────────────────────
+async function bookMeeting(){
+  const name=document.getElementById('f-name').value.trim();
+  const company=document.getElementById('f-company').value.trim();
+  const topic=document.getElementById('f-topic').value;
+  const productArea=document.getElementById('f-product-area').value;
+  const attendees=document.getElementById('f-attendees').value;
+  const notes=document.getElementById('f-notes').value.trim();
+  if(!name){alert('Please enter a visitor name.');return;}
+  if(!company){alert('Please enter a company.');return;}
+  if(!selectedSlot){alert('Please select a time slot.');return;}
+  if(!selectedSpace){alert('Please select a meeting space.');return;}
+  if(!isFree(currentDay,selectedSlot,selectedSpace)){showError('This space was just taken. Please choose another.');renderSlots();renderSpacePills();selectedSpace=null;return;}
+  const booking={name,company,day:currentDay,time:selectedSlot,space:selectedSpace,
+    spaceType:spaceType(selectedSpace),topic,productArea,attendees,notes,hosts:[...selectedHosts]};
+  const ok=await saveToNotion(booking);
+  if(!ok){showError('Failed to save. Please try again.');return;}
+  bookings.push({...booking,visitorName:name});
+  document.getElementById('f-name').value=''; document.getElementById('f-company').value='';
+  document.getElementById('f-topic').value=''; document.getElementById('f-product-area').value='';
   renderProductAreaPills('f');
-  document.getElementById('f-attendees').value='1';
-  document.getElementById('f-notes').value='';
+  document.getElementById('f-attendees').value='1'; document.getElementById('f-notes').value='';
   selectedSlot=null; selectedSpace=null; selectedHosts=[];
   renderSlots(); renderSpacePills(); renderHostPills(); updateStats();
-  showMsg('success', `<i class="ti ti-circle-check"></i> <strong>${name}</strong> saved — ${booking.space} · ${booking.day} · ${booking.time}${booking.hosts.length?' · '+booking.hosts.join(', '):''}`)
+  showMsg('success',`<i class="ti ti-circle-check"></i> <strong>${name}</strong> saved — ${booking.space} · ${booking.day} · ${booking.time}${booking.hosts.length?' · '+booking.hosts.join(', '):''}`)
 }
 
 // ── DELETE ────────────────────────────────────────────────────────────────
-async function deleteBooking(pageId, idx) {
-  if (!confirm('Delete this booking from Notion?')) return;
-  const ok = await deleteFromNotion(pageId);
-  if (ok) { bookings.splice(idx,1); renderList(); renderSlots(); updateStats(); renderTeam(); }
+async function deleteBooking(pageId,idx){
+  if(!confirm('Delete this booking?')) return;
+  const ok=await deleteFromNotion(pageId);
+  if(ok){bookings.splice(idx,1);renderList();renderSlots();updateStats();renderTeam();}
   else showError('Could not delete. Please try again.');
 }
 
 // ── EDIT ──────────────────────────────────────────────────────────────────
-function openEdit(idx) {
-  const b = bookings[idx];
-  editingBooking = { pageId: b.pageId, idx };
-  document.getElementById('edit-name').value         = b.visitorName||b.name||'';
-  document.getElementById('edit-company').value      = b.company||'';
-  document.getElementById('edit-space').value        = b.space||'Private room A';
-  document.getElementById('edit-topic').value        = b.topic||'';
-  document.getElementById('edit-product-area').value = b.productArea||'';
-  document.getElementById('edit-attendees').value    = b.attendees||'1';
-  document.getElementById('edit-notes').value        = b.notes||'';
-  document.getElementById('edit-slot-info').textContent = `${b.day} · ${b.time} — changing day/time requires rebooking`;
+function openEdit(idx){
+  const b=bookings[idx]; editingBooking={pageId:b.pageId,idx};
+  document.getElementById('edit-name').value=b.visitorName||b.name||'';
+  document.getElementById('edit-company').value=b.company||'';
+  document.getElementById('edit-space').value=b.space||'Private room A';
+  document.getElementById('edit-topic').value=b.topic||'';
+  document.getElementById('edit-product-area').value=b.productArea||'';
+  document.getElementById('edit-attendees').value=b.attendees||'1';
+  document.getElementById('edit-notes').value=b.notes||'';
+  document.getElementById('edit-slot-info').textContent=`${b.day} · ${b.time} — changing day/time requires rebooking`;
   renderProductAreaPills('edit');
-  editHosts = Array.isArray(b.hosts) ? [...b.hosts] : (b.railTeam||'').split(',').map(h=>h.trim()).filter(Boolean);
+  editHosts=Array.isArray(b.hosts)?[...b.hosts]:(b.railTeam||'').split(',').map(h=>h.trim()).filter(Boolean);
   renderEditHostPills();
   document.getElementById('edit-modal').classList.add('open');
 }
+function closeEdit(){ document.getElementById('edit-modal').classList.remove('open'); editingBooking=null; editHosts=[]; }
+function handleOverlayClick(e){ if(e.target===document.getElementById('edit-modal')) closeEdit(); }
 
-function closeEdit() {
-  document.getElementById('edit-modal').classList.remove('open');
-  editingBooking=null; editHosts=[];
-}
-
-function handleOverlayClick(e) {
-  if (e.target===document.getElementById('edit-modal')) closeEdit();
-}
-
-async function saveEdit() {
-  if (!editingBooking) return;
-  const { pageId, idx } = editingBooking;
-  const name        = document.getElementById('edit-name').value.trim();
-  const company     = document.getElementById('edit-company').value.trim();
-  const space       = document.getElementById('edit-space').value;
-  const topic       = document.getElementById('edit-topic').value;
-  const productArea = document.getElementById('edit-product-area').value;
-  const attendees   = document.getElementById('edit-attendees').value;
-  const notes       = document.getElementById('edit-notes').value.trim();
-  if (!name)    { alert('Visitor name is required.'); return; }
-  if (!company) { alert('Company is required.'); return; }
-
-  const btn = document.getElementById('edit-save-btn');
+async function saveEdit(){
+  if(!editingBooking) return;
+  const{pageId,idx}=editingBooking;
+  const name=document.getElementById('edit-name').value.trim();
+  const company=document.getElementById('edit-company').value.trim();
+  const space=document.getElementById('edit-space').value;
+  const topic=document.getElementById('edit-topic').value;
+  const productArea=document.getElementById('edit-product-area').value;
+  const attendees=document.getElementById('edit-attendees').value;
+  const notes=document.getElementById('edit-notes').value.trim();
+  if(!name){alert('Visitor name is required.');return;}
+  if(!company){alert('Company is required.');return;}
+  const btn=document.getElementById('edit-save-btn');
   btn.disabled=true; btn.textContent='Saving…';
   try {
-    await updateInNotion(pageId, { name, company, space, topic, productArea, attendees, notes, hosts:[...editHosts] });
-    bookings[idx] = { ...bookings[idx], visitorName:name, name, company, space,
-      spaceType:spaceType(space), topic, productArea, attendees, notes,
-      hosts:[...editHosts], railTeam:editHosts.join(', ') };
-    closeEdit();
-    renderList(); renderSlots(); updateStats();
-    showMsg('success', `<i class="ti ti-circle-check"></i> Booking updated — <strong>${name}</strong>`);
-  } catch(e) {
-    console.error(e);
-    showError('Could not update booking. Please try again.');
-  } finally {
-    btn.disabled=false; btn.innerHTML='<i class="ti ti-check"></i> Save changes';
-  }
+    await updateInNotion(pageId,{name,company,space,topic,productArea,attendees,notes,hosts:[...editHosts]});
+    bookings[idx]={...bookings[idx],visitorName:name,name,company,space,spaceType:spaceType(space),
+      topic,productArea,attendees,notes,hosts:[...editHosts],railTeam:editHosts.join(', ')};
+    closeEdit(); renderList(); renderSlots(); updateStats();
+    showMsg('success',`<i class="ti ti-circle-check"></i> Booking updated — <strong>${name}</strong>`);
+  } catch(e){ console.error(e); showError('Could not update. Please try again.'); }
+  finally{ btn.disabled=false; btn.innerHTML='<i class="ti ti-check"></i> Save changes'; }
 }
 
-// ── RENDER: LIST ─────────────────────────────────────────────────────────
-function renderList() {
-  const searchF = (document.getElementById('filter-search').value||'').toLowerCase();
-  const dayF    = document.getElementById('filter-day').value;
-  const spaceF  = document.getElementById('filter-space-type').value;
-  const hostF   = document.getElementById('filter-host').value;
-  const topicF  = document.getElementById('filter-topic').value;
-  const paF     = document.getElementById('filter-product-area').value;
-
-  const filtered = bookings
-    .map((b,i) => ({...b,_idx:i}))
-    .filter(b =>
-      (!searchF || (b.visitorName||b.name||'').toLowerCase().includes(searchF) || (b.company||'').toLowerCase().includes(searchF)) &&
-      (!dayF    || b.day===dayF) &&
-      (!spaceF  || b.spaceType===spaceF) &&
-      (!hostF   || (b.railTeam||'').includes(hostF)) &&
-      (!topicF  || b.topic===topicF) &&
-      (!paF     || b.productArea===paF)
-    )
-    .sort((a,b) => {
-      const d = DAYS.indexOf(a.day)-DAYS.indexOf(b.day);
-      return d!==0 ? d : a.time.localeCompare(b.time);
-    });
-
-  const list  = document.getElementById('booking-list');
-  const empty = document.getElementById('empty-state');
-  if (!filtered.length) { list.innerHTML=''; empty.style.display='block'; return; }
+// ── RENDER: LIST ──────────────────────────────────────────────────────────
+function renderList(){
+  const searchF=(document.getElementById('filter-search').value||'').toLowerCase();
+  const dayF=document.getElementById('filter-day').value;
+  const spaceF=document.getElementById('filter-space-type').value;
+  const hostF=document.getElementById('filter-host').value;
+  const topicF=document.getElementById('filter-topic').value;
+  const paF=document.getElementById('filter-product-area').value;
+  const filtered=bookings.map((b,i)=>({...b,_idx:i})).filter(b=>
+    (!searchF||(b.visitorName||b.name||'').toLowerCase().includes(searchF)||(b.company||'').toLowerCase().includes(searchF))&&
+    (!dayF||b.day===dayF)&&(!spaceF||b.spaceType===spaceF)&&
+    (!hostF||(b.railTeam||'').includes(hostF))&&(!topicF||b.topic===topicF)&&(!paF||b.productArea===paF)
+  ).sort((a,b)=>{const d=DAYS.indexOf(a.day)-DAYS.indexOf(b.day);return d!==0?d:a.time.localeCompare(b.time);});
+  const list=document.getElementById('booking-list'), empty=document.getElementById('empty-state');
+  if(!filtered.length){list.innerHTML='';empty.style.display='block';return;}
   empty.style.display='none';
-
-  list.innerHTML = filtered.map(b => {
-    const isPriv   = b.spaceType==='private';
-    const visName  = b.visitorName||b.name||'—';
-    const hostsArr = Array.isArray(b.hosts) ? b.hosts : (b.railTeam||'').split(',').map(h=>h.trim()).filter(Boolean);
-    const hostTags = hostsArr.map(h => {
-      const m  = TEAM.find(x=>fullName(x)===h.trim());
-      const rc = m?(RC[m.role]||RC.Other):RC.Other;
+  list.innerHTML=filtered.map(b=>{
+    const isPriv=b.spaceType==='private', visName=b.visitorName||b.name||'—';
+    const hostsArr=Array.isArray(b.hosts)?b.hosts:(b.railTeam||'').split(',').map(h=>h.trim()).filter(Boolean);
+    const hostTags=hostsArr.map(h=>{
+      const m=TEAM.find(x=>fullName(x)===h.trim()),rc=m?(RC[m.role]||RC.Other):RC.Other;
       return `<span style="display:inline-block;font-size:10px;padding:1px 7px;border-radius:10px;background:${rc.bg};color:${rc.color};border:0.5px solid ${rc.border};margin-right:3px;">${h}</span>`;
     }).join('');
-    const attendeesLabel = b.attendees && b.attendees!=='1'
-      ? `&nbsp;<i class="ti ti-users" style="font-size:11px;vertical-align:-1px;"></i> ${b.attendees}` : '';
+    const attLabel=b.attendees&&b.attendees!=='1'?`&nbsp;<i class="ti ti-users" style="font-size:11px;vertical-align:-1px;"></i> ${b.attendees}`:'';
     return `<div class="booking-row">
       <div class="booking-avatar${isPriv?'':' informal'}">${getInitialsStr(visName)}</div>
       <div class="booking-meta">
-        <div class="booking-name">${visName}
-          <span style="font-weight:400;color:#888;font-size:13px;">· ${b.company||''}</span>
-        </div>
+        <div class="booking-name">${visName} <span style="font-weight:400;color:#888;font-size:13px;">· ${b.company||''}</span></div>
         <div class="booking-detail">
           <i class="ti ti-calendar" style="font-size:12px;vertical-align:-1px;"></i> ${b.day} &nbsp;
           <i class="ti ti-clock" style="font-size:12px;vertical-align:-1px;"></i> ${b.time} &nbsp;
-          <i class="ti ${isPriv?'ti-lock':'ti-armchair'}" style="font-size:12px;vertical-align:-1px;"></i>
           <span class="badge ${isPriv?'badge-blue':'badge-teal'}">${b.space}</span>
-          ${attendeesLabel}
+          ${attLabel}
           ${b.topic?`&nbsp;<span class="badge ${topicBadge(b.topic)}">${b.topic}</span>`:''}
           ${b.productArea?`&nbsp;<span class="badge ${productAreaBadge(b.productArea)}">${b.productArea}</span>`:''}
         </div>
@@ -1000,76 +954,140 @@ function renderList() {
   }).join('');
 }
 
-// ── RENDER: TEAM ─────────────────────────────────────────────────────────
-function renderTeam() {
-  const grid = document.getElementById('team-grid');
-  const hostCounts = {};
-  bookings.forEach(b => {
-    const hosts = Array.isArray(b.hosts) ? b.hosts : (b.railTeam||'').split(',').map(h=>h.trim()).filter(Boolean);
-    hosts.forEach(h => { if(h) hostCounts[h]=(hostCounts[h]||0)+1; });
+// ── RENDER: TEAM ──────────────────────────────────────────────────────────
+function renderTeam(){
+  const grid=document.getElementById('team-grid'), hostCounts={};
+  bookings.forEach(b=>{
+    (Array.isArray(b.hosts)?b.hosts:(b.railTeam||'').split(',').map(h=>h.trim()).filter(Boolean))
+      .forEach(h=>{if(h)hostCounts[h]=(hostCounts[h]||0)+1;});
   });
-  const hosting = Object.keys(hostCounts).length;
-  document.getElementById('stat-hosts').textContent = hosting;
-  document.getElementById('stat-avg').textContent   = hosting>0 ? (bookings.length/hosting).toFixed(1) : '0';
-  grid.innerHTML = REAL_TEAM.map(m => {
-    const name  = fullName(m);
-    const rc    = RC[m.role]||RC.Other;
-    const count = hostCounts[name]||0;
+  const hosting=Object.keys(hostCounts).length;
+  document.getElementById('stat-hosts').textContent=hosting;
+  document.getElementById('stat-avg').textContent=hosting>0?(bookings.length/hosting).toFixed(1):'0';
+  grid.innerHTML=REAL_TEAM.map(m=>{
+    const name=fullName(m),rc=RC[m.role]||RC.Other,count=hostCounts[name]||0;
     return `<div class="team-card">
       <div class="team-avatar" style="background:${rc.bg};color:${rc.color};">${initials(m)}</div>
-      <div>
-        <div class="team-name">${name}</div>
-        <div class="team-role" style="color:${rc.color};">${roleLabel(m.role)}</div>
-        <div class="team-count">${count} meeting${count!==1?'s':''} assigned</div>
-      </div>
+      <div><div class="team-name">${name}</div>
+      <div class="team-role" style="color:${rc.color};">${roleLabel(m.role)}</div>
+      <div class="team-count">${count} meeting${count!==1?'s':''} assigned</div></div>
     </div>`;
   }).join('');
 }
 
-// ── STATS ────────────────────────────────────────────────────────────────
-function updateStats() {
-  document.getElementById('stat-total').textContent     = bookings.length;
-  document.getElementById('stat-private').textContent   = bookings.filter(b=>b.spaceType==='private').length;
-  document.getElementById('stat-informal').textContent  = bookings.filter(b=>b.spaceType==='informal').length;
-  document.getElementById('stat-attendees').textContent = bookings.reduce((s,b)=>s+(parseInt(b.attendees)||1),0);
+// ── STATS ─────────────────────────────────────────────────────────────────
+function updateStats(){
+  document.getElementById('stat-total').textContent=bookings.length;
+  document.getElementById('stat-private').textContent=bookings.filter(b=>b.spaceType==='private').length;
+  document.getElementById('stat-informal').textContent=bookings.filter(b=>b.spaceType==='informal').length;
+  document.getElementById('stat-attendees').textContent=bookings.reduce((s,b)=>s+(parseInt(b.attendees)||1),0);
   renderTeam();
 }
 
-// ── TAB SWITCH ───────────────────────────────────────────────────────────
-function switchTab(name, e) {
+// ── AVAILABILITY ──────────────────────────────────────────────────────────
+async function addAvailability(){
+  const person=document.getElementById('avail-person').value;
+  const day=document.getElementById('avail-day').value;
+  const start=document.getElementById('avail-start').value;
+  const end=document.getElementById('avail-end').value;
+  const reason=document.getElementById('avail-reason').value.trim();
+  if(!person){showAvailMsg('error','Please select your name.');return;}
+  if(start>=end){showAvailMsg('error','End time must be after start time.');return;}
+  const btn=document.getElementById('avail-add-btn');
+  btn.disabled=true; btn.textContent='Saving…';
+  const entry={person,day,startTime:start,endTime:end,reason};
+  const ok=await saveAvailability(entry);
+  btn.disabled=false; btn.innerHTML='<i class="ti ti-calendar-off"></i> Mark unavailable';
+  if(!ok){showAvailMsg('error','Failed to save. Please try again.');return;}
+  availability.push(entry);
+  document.getElementById('avail-reason').value='';
+  renderAvailList(); renderHostPills();
+  showAvailMsg('success',`Marked ${person} unavailable on ${day}, ${start}–${end}.`);
+}
+
+async function removeAvailability(pageId){
+  if(!confirm('Remove this entry?')) return;
+  const ok=await deleteAvailability(pageId);
+  if(!ok){showAvailMsg('error','Failed to remove.');return;}
+  availability=availability.filter(a=>a.pageId!==pageId);
+  renderAvailList(); renderHostPills();
+}
+
+function renderAvailList(){
+  const person=document.getElementById('avail-person').value;
+  const list=document.getElementById('avail-list');
+  const mine=availability.filter(a=>!person||a.person===person)
+    .slice().sort((a,b)=>DAYS.indexOf(a.day)-DAYS.indexOf(b.day)||a.startTime.localeCompare(b.startTime));
+  if(!mine.length){
+    list.innerHTML=`<p style="color:var(--text-tertiary);font-size:13px;">${person?'No unavailable times set.':'Select your name above.'}</p>`;
+    return;
+  }
+  list.innerHTML=mine.map(a=>`
+    <div class="avail-row">
+      <div>
+        <div style="font-weight:500;font-size:13px;">${a.person}</div>
+        <div style="font-size:12px;color:var(--text-tertiary);">${a.day} · ${a.startTime}–${a.endTime}${a.reason?' · '+a.reason:''}</div>
+      </div>
+      <button onclick="removeAvailability('${a.pageId}')" style="background:none;border:none;color:#c0392b;cursor:pointer;font-size:16px;padding:4px;">
+        <i class="ti ti-trash"></i>
+      </button>
+    </div>`).join('');
+}
+
+function populateAvailPerson(){
+  const sel=document.getElementById('avail-person');
+  REAL_TEAM.slice().sort((a,b)=>fullName(a).localeCompare(fullName(b))).forEach(m=>{
+    const o=document.createElement('option'); o.value=o.textContent=fullName(m); sel.appendChild(o);
+  });
+  const saved=localStorage.getItem('innotrans_avail_person');
+  if(saved) sel.value=saved;
+  sel.addEventListener('change',()=>{localStorage.setItem('innotrans_avail_person',sel.value);renderAvailList();});
+}
+
+function populateAvailTimes(){
+  const ss=document.getElementById('avail-start'), es=document.getElementById('avail-end');
+  ss.innerHTML=ALL_TIMES.map(t=>`<option>${t}</option>`).join('');
+  es.innerHTML=ALL_TIMES.map(t=>`<option>${t}</option>`).join('');
+  es.value=ALL_TIMES[ALL_TIMES.length-1];
+}
+
+// ── TAB SWITCH ────────────────────────────────────────────────────────────
+function switchTab(name,e){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   e.target.closest('.tab').classList.add('active');
   document.getElementById('view-'+name).classList.add('active');
-  if (name==='list')     { renderList(); updateStats(); }
-  if (name==='book')     { renderSlots(); renderSpacePills(); }
-  if (name==='team')     { renderTeam(); }
-  if (name==='calendar') { renderCalendar(); }
+  if(name==='list')         {renderList();updateStats();}
+  if(name==='book')         {renderSlots();renderSpacePills();}
+  if(name==='team')         renderTeam();
+  if(name==='calendar')     renderCalendar();
+  if(name==='availability') renderAvailList();
 }
 
-// ── EXPORT CSV ───────────────────────────────────────────────────────────
-function exportCSV() {
-  if (!bookings.length) { alert('No bookings to export yet.'); return; }
-  const headers = ['Day','Time','Space','Space type','Visitor name','Company','Topic','Product area','Visiting attendees','Rail team','Notes'];
-  const rows = bookings.map(b => {
-    const hosts = Array.isArray(b.hosts) ? b.hosts.join('; ') : (b.railTeam||'');
+// ── EXPORT CSV ────────────────────────────────────────────────────────────
+function exportCSV(){
+  if(!bookings.length){alert('No bookings to export.');return;}
+  const headers=['Day','Time','Space','Space type','Visitor name','Company','Topic','Product area','Visiting attendees','Rail team','Notes'];
+  const rows=bookings.map(b=>{
+    const hosts=Array.isArray(b.hosts)?b.hosts.join('; '):(b.railTeam||'');
     return [b.day,b.time,b.space,b.spaceType,b.visitorName||b.name,b.company,b.topic,b.productArea||'',b.attendees,hosts,b.notes]
       .map(v=>`"${(v||'').replace(/"/g,'""')}"`);
   });
-  const csv  = [headers,...rows].map(r=>r.join(',')).join('\n');
-  const blob = new Blob([csv],{type:'text/csv'});
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href=url; a.download='InnoTrans2026_meetings.csv'; a.click();
+  const csv=[headers,...rows].map(r=>r.join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download='InnoTrans2026_meetings.csv'; a.click();
   URL.revokeObjectURL(url);
 }
 
-// ── INIT ─────────────────────────────────────────────────────────────────
+// ── INIT ──────────────────────────────────────────────────────────────────
 renderProductAreaPills('f');
 renderProductAreaPills('edit');
 renderHostPills();
 populateHostFilter();
-loadBookings();
+populateAvailPerson();
+populateAvailTimes();
+loadAll();
 </script>
 </body>
 </html>
