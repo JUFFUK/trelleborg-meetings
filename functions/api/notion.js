@@ -1,47 +1,44 @@
-export async function onRequestPost(context) {
-  const NOTION_TOKEN = context.env.NOTION_TOKEN;
-  const NOTION_BASE  = 'https://api.notion.com';
+export async function onRequest(context) {
+  const { request, env } = context;
 
-  if (!NOTION_TOKEN) {
-    return new Response(JSON.stringify({ error: 'NOTION_TOKEN not configured' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    });
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+  };
+
+  if (request.method === 'OPTIONS') {
+    return new Response(null, { status: 204, headers: { ...corsHeaders, 'Access-Control-Max-Age': '86400' } });
   }
 
-  let payload;
+  if (request.method !== 'POST') {
+    return new Response('Method not allowed', { status: 405, headers: corsHeaders });
+  }
+
   try {
-    payload = await context.request.json();
-  } catch {
-    return new Response(JSON.stringify({ error: 'Invalid JSON body' }), {
-      status: 400,
-      headers: { 'Content-Type': 'application/json' }
+    const body = await request.json();
+
+    const upstream = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': env.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+        'anthropic-beta': 'mcp-client-2025-04-04',
+      },
+      body: JSON.stringify(body),
+    });
+
+    const data = await upstream.json();
+
+    return new Response(JSON.stringify(data), {
+      status: upstream.status,
+      headers: { 'Content-Type': 'application/json', ...corsHeaders },
+    });
+  } catch (e) {
+    return new Response(JSON.stringify({ error: e.message }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json', ...corsHeaders },
     });
   }
-
-  const { path, method, body } = payload;
-
-  if (!path || !method) {
-    return new Response(JSON.stringify({ error: 'Missing path or method' }), {
-      status: 400,
-      headers: { 'Content-Type': 'application/json' }
-    });
-  }
-
-  const notionRes = await fetch(`${NOTION_BASE}${path}`, {
-    method,
-    headers: {
-      'Authorization': `Bearer ${NOTION_TOKEN}`,
-      'Content-Type': 'application/json',
-      'Notion-Version': '2022-06-28'
-    },
-    body: body ? JSON.stringify(body) : undefined
-  });
-
-  const data = await notionRes.text();
-
-  return new Response(data, {
-    status: notionRes.status,
-    headers: { 'Content-Type': 'application/json' }
-  });
 }
