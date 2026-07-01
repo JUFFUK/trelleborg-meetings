@@ -16,17 +16,16 @@ export async function onRequest(context) {
   }
 
   try {
-    const body = await request.json();
+    const { path, method, body } = await request.json();
 
-    const upstream = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
+    const upstream = await fetch(`https://api.notion.com${path}`, {
+      method: method || 'GET',
       headers: {
+        'Authorization': `Bearer ${env.NOTION_TOKEN}`,
         'Content-Type': 'application/json',
-        'x-api-key': env.ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01',
-        'anthropic-beta': 'mcp-client-2025-04-04',
+        'Notion-Version': '2022-06-28',
       },
-      body: JSON.stringify(body),
+      body: body ? JSON.stringify(body) : undefined,
     });
 
     const data = await upstream.json();
