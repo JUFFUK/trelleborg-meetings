@@ -47,12 +47,10 @@
     .card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1rem; box-shadow: var(--shadow); }
     .section-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--text-tertiary); margin-bottom: 10px; }
 
-    /* Day tabs */
     .day-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
     .day-tab { padding: 6px 14px; border: 0.5px solid var(--border); border-radius: var(--radius-md); font-size: 13px; cursor: pointer; background: var(--bg); font-family: var(--font-sans); color: var(--text-secondary); }
     .day-tab.active { background: #1a1a18; color: #fff; border-color: #1a1a18; }
 
-    /* Slot grid */
     .slot-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px,1fr)); gap: 8px; margin-top: 10px; }
     .slot { padding: 8px 10px; border: 0.5px solid var(--border); border-radius: var(--radius-md); font-size: 13px; font-weight: 500; cursor: pointer; background: var(--bg); font-family: var(--font-sans); color: var(--text-primary); text-align: left; transition: all .15s; }
     .slot:hover:not(:disabled):not(.fully-taken) { border-color: #85B7EB; background: #E6F1FB; }
@@ -61,7 +59,6 @@
     .slot.fully-taken { background: var(--bg-secondary); color: var(--text-tertiary); cursor: not-allowed; }
     .slot-avail { font-size: 10px; font-weight: 400; margin-top: 2px; opacity: .75; }
 
-    /* Space pills */
     .space-pills { display: flex; flex-wrap: wrap; gap: 8px; }
     .space-pill { padding: 8px 16px; border: 0.5px solid var(--border); border-radius: var(--radius-md); font-size: 13px; cursor: pointer; background: var(--bg); font-family: var(--font-sans); color: var(--text-secondary); transition: all .15s; }
     .space-pill:hover:not(:disabled) { border-color: #aaa; }
@@ -69,51 +66,48 @@
     .space-pill.selected-informal { background: #E1F5EE; border-color: #5DCAA5; color: #085041; font-weight: 500; }
     .space-pill.disabled { opacity: .4; cursor: not-allowed; }
 
-    /* Legend */
     .space-legend { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 10px; }
     .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-secondary); }
     .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
 
-    /* Form */
     .field { margin-bottom: 1rem; }
     .field label { display: block; font-size: 12px; font-weight: 500; color: var(--text-secondary); margin-bottom: 5px; }
     .field input, .field select, .field textarea { width: 100%; padding: 8px 10px; border: 0.5px solid var(--border); border-radius: var(--radius-md); font-size: 13px; font-family: var(--font-sans); color: var(--text-primary); background: var(--bg); outline: none; }
     .field input:focus, .field select:focus, .field textarea:focus { border-color: #1a1a18; }
     .field textarea { resize: vertical; min-height: 60px; }
 
-    /* Host pills */
+    /* Product area pills */
+    .pa-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+    .pa-pill { padding: 6px 14px; border: 0.5px solid var(--border); border-radius: 20px; font-size: 13px; cursor: pointer; color: var(--text-secondary); background: var(--bg); font-family: var(--font-sans); transition: all .12s; }
+    .pa-pill:hover { border-color: #aaa; background: var(--bg-secondary); }
+    .pa-pill.pa-selected { font-weight: 500; }
+    .pa-pill.pa-faded { opacity: .35; }
+
     .host-pills { display: flex; flex-wrap: wrap; gap: 6px; }
     .host-pill { padding: 5px 10px; border: 0.5px solid var(--border); border-radius: 20px; font-size: 12px; cursor: pointer; background: var(--bg); font-family: var(--font-sans); color: var(--text-secondary); transition: all .15s; }
-    .host-pill:hover { border-color: #aaa; }
+    .host-pill:hover:not([disabled]) { border-color: #aaa; }
     .selected-hosts-row { display: flex; flex-wrap: wrap; gap: 6px; min-height: 24px; }
     .selected-host-chip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
 
-    /* Buttons */
     .btn-primary { display: inline-flex; align-items: center; gap: 6px; padding: 9px 18px; background: #1a1a18; color: #fff; border: none; border-radius: var(--radius-md); font-size: 13px; font-weight: 500; cursor: pointer; font-family: var(--font-sans); }
     .btn-primary:hover { background: #333; }
     .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
     .btn-outline { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; background: var(--bg); color: var(--text-secondary); border: 0.5px solid var(--border); border-radius: var(--radius-md); font-size: 12px; cursor: pointer; font-family: var(--font-sans); }
     .btn-outline:hover { background: var(--bg-secondary); color: var(--text-primary); }
-    .btn-danger { display: inline-flex; align-items: center; gap: 6px; padding: 9px 18px; background: #c0392b; color: #fff; border: none; border-radius: var(--radius-md); font-size: 13px; font-weight: 500; cursor: pointer; font-family: var(--font-sans); }
-    .btn-danger:hover { background: #a93226; }
 
-    /* Messages */
     .success-msg { display: none; padding: 10px 14px; background: #E1F5EE; border: 0.5px solid #5DCAA5; border-radius: var(--radius-md); color: #085041; font-size: 13px; margin-bottom: 1rem; }
     .error-msg { display: none; padding: 10px 14px; background: #FDECEA; border: 0.5px solid #E57373; border-radius: var(--radius-md); color: #B71C1C; font-size: 13px; margin-bottom: 1rem; }
 
-    /* Stats */
     .stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 1rem; }
     .stat { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: .9rem 1rem; box-shadow: var(--shadow); }
     .stat-label { font-size: 11px; color: var(--text-tertiary); margin-bottom: 4px; }
     .stat-val { font-size: 22px; font-weight: 600; color: var(--text-primary); }
 
-    /* Filter row */
     .filter-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1rem; align-items: center; }
     .filter-row select, .filter-row input[type="text"] { padding: 7px 10px; border: 0.5px solid var(--border); border-radius: var(--radius-md); font-size: 12px; font-family: var(--font-sans); color: var(--text-secondary); background: var(--bg); outline: none; }
     .filter-row input[type="text"] { min-width: 180px; }
     .filter-row select:focus, .filter-row input[type="text"]:focus { border-color: #1a1a18; color: var(--text-primary); }
 
-    /* Booking list */
     .booking-row { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 0.5px solid var(--border-light); }
     .booking-row:last-child { border-bottom: none; }
     .booking-avatar { width: 36px; height: 36px; border-radius: 50%; background: #E6F1FB; color: #0C447C; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; flex-shrink: 0; }
@@ -126,19 +120,17 @@
     .edit-btn:hover { background: #E6F1FB; color: #0C447C; border-color: #85B7EB; }
     .row-actions { display: flex; gap: 4px; flex-shrink: 0; }
 
-    /* Badges */
     .badge { display: inline-block; padding: 1px 7px; border-radius: 10px; font-size: 11px; font-weight: 500; }
-    .badge-blue  { background: #E6F1FB; color: #0C447C; }
-    .badge-green { background: #EAF3DE; color: #27500A; }
-    .badge-gray  { background: #F1EFE8; color: #444441; }
-    .badge-amber { background: #FAEEDA; color: #633806; }
-    .badge-teal  { background: #E1F5EE; color: #085041; }
+    .badge-blue   { background: #E6F1FB; color: #0C447C; }
+    .badge-green  { background: #EAF3DE; color: #27500A; }
+    .badge-gray   { background: #F1EFE8; color: #444441; }
+    .badge-amber  { background: #FAEEDA; color: #633806; }
+    .badge-teal   { background: #E1F5EE; color: #085041; }
     .badge-purple { background: #EEEDFE; color: #3C3489; }
+    .badge-orange { background: #FCE4D6; color: #8A3B0A; }
 
-    /* Empty */
     .empty { text-align: center; padding: 2rem; color: var(--text-tertiary); font-size: 14px; }
 
-    /* Team grid */
     .team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px,1fr)); gap: 10px; }
     .team-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1rem; display: flex; align-items: center; gap: 10px; box-shadow: var(--shadow); }
     .team-avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; flex-shrink: 0; }
@@ -146,7 +138,6 @@
     .team-role { font-size: 11px; margin: 0; }
     .team-count { font-size: 11px; color: var(--text-tertiary); margin-top: 2px; }
 
-    /* Calendar */
     .cal-wrap { overflow-x: auto; }
     .cal-table { width: 100%; border-collapse: collapse; min-width: 560px; }
     .cal-table th { font-size: 12px; font-weight: 500; color: var(--text-secondary); padding: 8px 6px; text-align: center; border-bottom: 0.5px solid var(--border); white-space: nowrap; }
@@ -168,7 +159,6 @@
 
     .loading-bar { text-align: center; padding: 1.5rem; font-size: 13px; color: var(--text-tertiary); }
 
-    /* Role group labels */
     .role-group-label { font-size: 11px; font-weight: 500; color: var(--text-tertiary); margin: 10px 0 4px; text-transform: uppercase; letter-spacing: .04em; }
     .role-group-label:first-child { margin-top: 0; }
 
@@ -214,11 +204,8 @@
     </div>
     <div class="field">
       <label>Product area</label>
-      <select id="edit-product-area">
-        <option value="">Select product area…</option>
-        <option>Antivibration Solutions</option><option>Sealing Solutions</option>
-        <option>Fluid Handling</option><option>Engineered Coated Fabrics</option>
-      </select>
+      <input type="hidden" id="edit-product-area" value="">
+      <div class="pa-pills" id="edit-product-area-pills"></div>
     </div>
     <div class="field">
       <label>Number of visiting attendees</label>
@@ -230,7 +217,8 @@
     <div class="field">
       <label>Rail team attendees</label>
       <div id="edit-selected-hosts-row" class="selected-hosts-row" style="margin-bottom:8px;min-height:24px;"></div>
-      <div>
+      <div id="edit-host-pills-empty" style="font-size:12px;color:var(--text-tertiary);display:none;">Select a product area above to see the relevant team.</div>
+      <div id="edit-host-pills-groups">
         <p class="role-group-label">Sales</p>
         <div class="host-pills" id="edit-host-pills-sales"></div>
         <p class="role-group-label">Engineering</p>
@@ -316,13 +304,8 @@
       </div>
       <div class="field">
         <label>Product area</label>
-        <select id="f-product-area">
-          <option value="">Select product area…</option>
-          <option>Antivibration Solutions</option>
-          <option>Sealing Solutions</option>
-          <option>Fluid Handling</option>
-          <option>Engineered Coated Fabrics</option>
-        </select>
+        <input type="hidden" id="f-product-area" value="">
+        <div class="pa-pills" id="f-product-area-pills"></div>
       </div>
       <div class="field">
         <label>Number of visiting attendees</label>
@@ -333,8 +316,9 @@
       </div>
       <div class="field">
         <label>Rail team attendees <span style="color:var(--text-tertiary);font-weight:400;">(select one or more)</span></label>
-        <div id="selected-hosts-row" class="selected-hosts-row"></div>
-        <div style="margin-top:8px;">
+        <div id="selected-hosts-row" class="selected-hosts-row" style="margin-bottom:8px;"></div>
+        <div id="host-pills-empty" style="font-size:12px;color:var(--text-tertiary);margin-top:4px;">Select a product area above to see the relevant team.</div>
+        <div id="host-pills-groups" style="display:none;margin-top:8px;">
           <p class="role-group-label">Sales</p>
           <div class="host-pills" id="host-pills-sales"></div>
           <p class="role-group-label">Engineering</p>
@@ -428,34 +412,62 @@
 </main>
 
 <script>
-// ── CONFIG ──────────────────────────────────────────────────────────────
-// API key is now stored in Cloudflare env as ANTHROPIC_API_KEY — not needed here
 const NOTION_DS = 'a9a88af8-c285-42c2-8cf6-e421b6f69793';
 
-// ── TEAM DATA ───────────────────────────────────────────────────────────
+const PRODUCT_AREAS = ['Antivibration Solutions','Sealing Solutions','Fluid Handling','Engineered Coated Fabrics'];
+
+const PA_COLORS = {
+  'Antivibration Solutions':   {bg:'#E6F1FB', color:'#0C447C', border:'#85B7EB'},
+  'Sealing Solutions':         {bg:'#EAF3DE', color:'#27500A', border:'#97C459'},
+  'Fluid Handling':            {bg:'#FCE4D6', color:'#8A3B0A', border:'#EF9F27'},
+  'Engineered Coated Fabrics': {bg:'#EEEDFE', color:'#3C3489', border:'#AFA9EC'}
+};
+
 const TEAM = [
-  {first:'Arsalan',     last:'Bagheri',       role:'Sales'},
-  {first:'Elion',       last:'Pogaj',          role:'Sales'},
-  {first:'Jörg',        last:'Spreckels',      role:'Engineering'},
-  {first:'Kim',         last:'Lindholm',       role:'Sales'},
-  {first:'Stefan',      last:'Hülsiggensen',   role:'Sales'},
-  {first:'Patrick',     last:'Zenker',         role:'Engineering'},
-  {first:'Rüdiger',     last:'Hack',           role:'Engineering'},
-  {first:'Sascha',      last:'Ungewiss',       role:'Sales'},
-  {first:'Tobias',      last:'Denner',         role:'Sales'},
-  {first:'Jim',         last:'Weaver',         role:'Sales'},
-  {first:'Klaua',       last:'Ulf',            role:'Sales'},
-  {first:'Corinna',     last:'Gall',           role:'Internal'},
-  {first:'Lutz',        last:'Claudia',        role:'Sales'},
-  {first:'Conrad',      last:'Hextall',        role:'Engineering'},
-  {first:'Samuele',     last:'Vona',           role:'Sales'},
-  {first:'Antoine',     last:'Charrier',       role:'Sales'},
-  {first:'Jean-François',last:'Mabile',        role:'GM'},
-  {first:'Ranadip',     last:'Basu',           role:'Sales'},
-  {first:'Mallikarjun', last:'Uppu',           role:'Engineering'},
-  {first:'Sudeep',      last:'Mukherjee',      role:'Sales'},
-  {first:'Nathan',      last:'Lipkewycz',      role:'Sales'}
+  // Antivibration Solutions (real Rail team)
+  {first:'Arsalan',      last:'Bagheri',      role:'Sales',       productArea:'Antivibration Solutions'},
+  {first:'Elion',        last:'Pogaj',         role:'Sales',       productArea:'Antivibration Solutions'},
+  {first:'Jörg',         last:'Spreckels',     role:'Engineering', productArea:'Antivibration Solutions'},
+  {first:'Kim',          last:'Lindholm',      role:'Sales',       productArea:'Antivibration Solutions'},
+  {first:'Stefan',       last:'Hülsiggensen',  role:'Sales',       productArea:'Antivibration Solutions'},
+  {first:'Patrick',      last:'Zenker',        role:'Engineering', productArea:'Antivibration Solutions'},
+  {first:'Rüdiger',      last:'Hack',          role:'Engineering', productArea:'Antivibration Solutions'},
+  {first:'Sascha',       last:'Ungewiss',      role:'Sales',       productArea:'Antivibration Solutions'},
+  {first:'Tobias',       last:'Denner',        role:'Sales',       productArea:'Antivibration Solutions'},
+  {first:'Jim',          last:'Weaver',        role:'Sales',       productArea:'Antivibration Solutions'},
+  {first:'Klaua',        last:'Ulf',           role:'Sales',       productArea:'Antivibration Solutions'},
+  {first:'Corinna',      last:'Gall',          role:'Internal',    productArea:'Antivibration Solutions'},
+  {first:'Lutz',         last:'Claudia',       role:'Sales',       productArea:'Antivibration Solutions'},
+  {first:'Conrad',       last:'Hextall',       role:'Engineering', productArea:'Antivibration Solutions'},
+  {first:'Samuele',      last:'Vona',          role:'Sales',       productArea:'Antivibration Solutions'},
+  {first:'Antoine',      last:'Charrier',      role:'Sales',       productArea:'Antivibration Solutions'},
+  {first:'Jean-François',last:'Mabile',        role:'GM',          productArea:'Antivibration Solutions'},
+  {first:'Ranadip',      last:'Basu',          role:'Sales',       productArea:'Antivibration Solutions'},
+  {first:'Mallikarjun',  last:'Uppu',          role:'Engineering', productArea:'Antivibration Solutions'},
+  {first:'Sudeep',       last:'Mukherjee',     role:'Sales',       productArea:'Antivibration Solutions'},
+  {first:'Nathan',       last:'Lipkewycz',     role:'Sales',       productArea:'Antivibration Solutions'},
+  // Sealing Solutions (DUMMY — replace with real names)
+  {first:'Dummy',        last:'Sealing1',      role:'Sales',       productArea:'Sealing Solutions'},
+  {first:'Dummy',        last:'Sealing2',      role:'Sales',       productArea:'Sealing Solutions'},
+  {first:'Dummy',        last:'Sealing3',      role:'Engineering', productArea:'Sealing Solutions'},
+  {first:'Dummy',        last:'Sealing4',      role:'Engineering', productArea:'Sealing Solutions'},
+  {first:'Dummy',        last:'Sealing5',      role:'GM',          productArea:'Sealing Solutions'},
+  // Fluid Handling (DUMMY — replace with real names)
+  {first:'Dummy',        last:'Fluid1',        role:'Sales',       productArea:'Fluid Handling'},
+  {first:'Dummy',        last:'Fluid2',        role:'Sales',       productArea:'Fluid Handling'},
+  {first:'Dummy',        last:'Fluid3',        role:'Engineering', productArea:'Fluid Handling'},
+  {first:'Dummy',        last:'Fluid4',        role:'Engineering', productArea:'Fluid Handling'},
+  {first:'Dummy',        last:'Fluid5',        role:'GM',          productArea:'Fluid Handling'},
+  // Engineered Coated Fabrics (DUMMY — replace with real names)
+  {first:'Dummy',        last:'Fabrics1',      role:'Sales',       productArea:'Engineered Coated Fabrics'},
+  {first:'Dummy',        last:'Fabrics2',      role:'Sales',       productArea:'Engineered Coated Fabrics'},
+  {first:'Dummy',        last:'Fabrics3',      role:'Engineering', productArea:'Engineered Coated Fabrics'},
+  {first:'Dummy',        last:'Fabrics4',      role:'Engineering', productArea:'Engineered Coated Fabrics'},
+  {first:'Dummy',        last:'Fabrics5',      role:'GM',          productArea:'Engineered Coated Fabrics'}
 ];
+
+// For team view stats, only count the real 21 Antivibration members
+const REAL_TEAM = TEAM.filter(m => m.productArea === 'Antivibration Solutions');
 
 const RC = {
   Sales:       {bg:'#E6F1FB', color:'#0C447C', border:'#85B7EB'},
@@ -479,17 +491,16 @@ function roleLabel(r)  { return r==='ID'?'I & D': r==='Internal'?'Internal sales
 function spaceType(s)  { return SPACES.private.includes(s) ? 'private' : 'informal'; }
 function getInitialsStr(n) { const p=n.trim().split(' '); return p.length>1?(p[0][0]+p[p.length-1][0]).toUpperCase():n.slice(0,2).toUpperCase(); }
 
-// ── STATE ───────────────────────────────────────────────────────────────
-let currentDay    = 'Tue 22 Sep';
-let selectedSlot  = null;
-let selectedSpace = null;
-let selectedHosts = [];
-let editHosts     = [];
+let currentDay     = 'Tue 22 Sep';
+let selectedSlot   = null;
+let selectedSpace  = null;
+let selectedHosts  = [];
+let editHosts      = [];
 let editingBooking = null;
-let calSpace      = 'all';
-let bookings      = [];
+let calSpace       = 'all';
+let bookings       = [];
 
-// ── NOTION API (via Cloudflare proxy) ───────────────────────────────────
+// ── NOTION API (via Cloudflare proxy) ────────────────────────────────────
 async function notionCall(userMessage) {
   const res = await fetch('/api/notion', {
     method: 'POST',
@@ -520,12 +531,10 @@ async function loadBookings() {
     bookings = match ? JSON.parse(match[0]) : [];
   } catch(e) {
     console.error(e);
-    showError('Could not load bookings from Notion. Check connection and Cloudflare env.');
+    showError('Could not load bookings from Notion.');
     bookings = [];
   }
-  renderSlots();
-  renderSpacePills();
-  updateStats();
+  renderSlots(); renderSpacePills(); updateStats();
   if (document.getElementById('view-list').classList.contains('active'))     renderList();
   if (document.getElementById('view-calendar').classList.contains('active')) renderCalendar();
   if (document.getElementById('view-team').classList.contains('active'))     renderTeam();
@@ -576,7 +585,6 @@ async function deleteFromNotion(pageId) {
   catch(e) { return false; }
 }
 
-// ── HELPERS ─────────────────────────────────────────────────────────────
 function getBookingsAt(day, time) { return bookings.filter(b => b.day===day && b.time===time); }
 function isFree(day, time, space) { return !bookings.some(b => b.day===day && b.time===time && b.space===space); }
 
@@ -595,8 +603,167 @@ function topicBadge(t) {
 
 function productAreaBadge(pa) {
   const m = {'Antivibration Solutions':'badge-blue','Sealing Solutions':'badge-green',
-    'Fluid Handling':'badge-teal','Engineered Coated Fabrics':'badge-purple'};
+    'Fluid Handling':'badge-orange','Engineered Coated Fabrics':'badge-purple'};
   return m[pa] || 'badge-gray';
+}
+
+// ── PRODUCT AREA PILLS ───────────────────────────────────────────────────
+function renderProductAreaPills(prefix) {
+  const hidden = document.getElementById(prefix+'-product-area');
+  const wrap   = document.getElementById(prefix+'-product-area-pills');
+  if (!hidden || !wrap) return;
+  const current = hidden.value;
+  wrap.innerHTML = PRODUCT_AREAS.map(a => {
+    const isSel  = current===a;
+    const faded  = current && !isSel;
+    const colors = PA_COLORS[a];
+    const style  = isSel ? `background:${colors.bg};border-color:${colors.border};color:${colors.color};` : '';
+    return `<button type="button" class="pa-pill${isSel?' pa-selected':''}${faded?' pa-faded':''}" style="${style}"
+      onclick="selectProductArea('${prefix}','${a.replace(/'/g,"\\'")}')">${a}</button>`;
+  }).join('');
+}
+
+function selectProductArea(prefix, area) {
+  const hidden = document.getElementById(prefix+'-product-area');
+  hidden.value = (hidden.value===area) ? '' : area;
+  renderProductAreaPills(prefix);
+  if (prefix==='f') {
+    // Drop any selected hosts not in the new product area
+    selectedHosts = selectedHosts.filter(name => {
+      const m = TEAM.find(x => fullName(x)===name);
+      return m && m.productArea===hidden.value;
+    });
+    renderHostPills();
+  } else if (prefix==='edit') {
+    editHosts = editHosts.filter(name => {
+      const m = TEAM.find(x => fullName(x)===name);
+      return m && m.productArea===hidden.value;
+    });
+    renderEditHostPills();
+  }
+}
+
+// ── HOST PILLS (booking form) ────────────────────────────────────────────
+function renderHostPills() {
+  const area     = document.getElementById('f-product-area').value;
+  const emptyEl  = document.getElementById('host-pills-empty');
+  const groupsEl = document.getElementById('host-pills-groups');
+  if (!area) {
+    emptyEl.style.display='block'; groupsEl.style.display='none';
+    renderSelectedTags(); return;
+  }
+  emptyEl.style.display='none'; groupsEl.style.display='block';
+  const teamForArea = TEAM.filter(m => m.productArea===area);
+  const groups = {
+    sales:       teamForArea.filter(m=>['Sales','Internal','GM'].includes(m.role)),
+    engineering: teamForArea.filter(m=>m.role==='Engineering'),
+    other:       teamForArea.filter(m=>['ID','Other'].includes(m.role))
+  };
+  ['sales','engineering','other'].forEach(g => {
+    const el = document.getElementById(`host-pills-${g}`);
+    if (!el) return;
+    el.innerHTML = groups[g].map(m => {
+      const name  = fullName(m);
+      const rc    = RC[m.role]||RC.Other;
+      const isSel = selectedHosts.includes(name);
+      return `<button class="host-pill" onclick="toggleHost('${name.replace(/'/g,"\\'")}')"
+        style="${isSel?`background:${rc.bg};border-color:${rc.border};color:${rc.color};font-weight:500;`:''}"
+      >${m.first} ${m.last?m.last[0]+'.':''}</button>`;
+    }).join('');
+  });
+  renderSelectedTags();
+}
+
+function renderSelectedTags() {
+  const row = document.getElementById('selected-hosts-row');
+  row.innerHTML = selectedHosts.map(h => {
+    const m  = TEAM.find(x=>fullName(x)===h);
+    const rc = m?(RC[m.role]||RC.Other):RC.Other;
+    return `<span class="selected-host-chip" style="background:${rc.bg};color:${rc.color};border:0.5px solid ${rc.border};">${h} <span onclick="toggleHost('${h.replace(/'/g,"\\'")}')" style="cursor:pointer;opacity:.6;margin-left:2px;">✕</span></span>`;
+  }).join('');
+}
+
+function toggleHost(name) {
+  if (selectedHosts.includes(name)) selectedHosts = selectedHosts.filter(h=>h!==name);
+  else selectedHosts.push(name);
+  renderHostPills();
+}
+
+// ── HOST PILLS (edit modal) ──────────────────────────────────────────────
+function renderEditHostPills() {
+  const area     = document.getElementById('edit-product-area').value;
+  const emptyEl  = document.getElementById('edit-host-pills-empty');
+  const groupsEl = document.getElementById('edit-host-pills-groups');
+  if (!area) {
+    emptyEl.style.display='block'; groupsEl.style.display='none';
+    renderEditSelectedTags(); return;
+  }
+  emptyEl.style.display='none'; groupsEl.style.display='block';
+  const teamForArea = TEAM.filter(m => m.productArea===area);
+  const groups = {
+    sales:       teamForArea.filter(m=>['Sales','Internal','GM'].includes(m.role)),
+    engineering: teamForArea.filter(m=>m.role==='Engineering'),
+    other:       teamForArea.filter(m=>['ID','Other'].includes(m.role))
+  };
+  ['sales','engineering','other'].forEach(g => {
+    const el = document.getElementById(`edit-host-pills-${g}`);
+    if (!el) return;
+    el.innerHTML = groups[g].map(m => {
+      const name  = fullName(m);
+      const rc    = RC[m.role]||RC.Other;
+      const isSel = editHosts.includes(name);
+      return `<button class="host-pill" onclick="toggleEditHost('${name.replace(/'/g,"\\'")}')"
+        style="${isSel?`background:${rc.bg};border-color:${rc.border};color:${rc.color};font-weight:500;`:''}"
+      >${m.first} ${m.last?m.last[0]+'.':''}</button>`;
+    }).join('');
+  });
+  renderEditSelectedTags();
+}
+
+function renderEditSelectedTags() {
+  const row = document.getElementById('edit-selected-hosts-row');
+  row.innerHTML = editHosts.map(h => {
+    const m  = TEAM.find(x=>fullName(x)===h);
+    const rc = m?(RC[m.role]||RC.Other):RC.Other;
+    return `<span class="selected-host-chip" style="background:${rc.bg};color:${rc.color};border:0.5px solid ${rc.border};">${h} <span onclick="toggleEditHost('${h.replace(/'/g,"\\'")}')" style="cursor:pointer;opacity:.6;margin-left:2px;">✕</span></span>`;
+  }).join('');
+}
+
+function toggleEditHost(name) {
+  if (editHosts.includes(name)) editHosts = editHosts.filter(h=>h!==name);
+  else editHosts.push(name);
+  renderEditHostPills();
+}
+
+// ── SLOT / SPACE / DAY ───────────────────────────────────────────────────
+function selectDay(el, day) {
+  document.querySelectorAll('.day-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  currentDay=day; selectedSlot=null; selectedSpace=null;
+  renderSlots(); renderSpacePills();
+}
+
+function selectSlot(time) {
+  if (selectedSlot===time) { selectedSlot=null; selectedSpace=null; }
+  else { selectedSlot=time; selectedSpace=null; }
+  renderSlots(); renderSpacePills();
+}
+
+function selectSpace(space) {
+  selectedSpace = selectedSpace===space ? null : space;
+  renderSpacePills();
+}
+
+function selectCalSpace(el, space) {
+  document.querySelectorAll('.cal-space-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  calSpace=space; renderCalendar();
+}
+
+function populateHostFilter() {
+  const sel = document.getElementById('filter-host');
+  sel.innerHTML = '<option value="">All hosts</option>' +
+    REAL_TEAM.map(m=>`<option>${fullName(m)}</option>`).join('');
 }
 
 // ── RENDER: SLOTS ────────────────────────────────────────────────────────
@@ -653,8 +820,8 @@ function renderCalendar() {
         html += `<td><div class="cal-cell empty-day" style="font-size:10px;text-align:center;padding-top:10px;color:#aaa;">—</div></td>`;
         return;
       }
-      const bkgsHere = bookings.filter(b=>b.day===day && b.time===t && spaces.includes(b.space));
-      const takenSp  = bkgsHere.map(b=>b.space);
+      const bkgsHere  = bookings.filter(b=>b.day===day && b.time===t && spaces.includes(b.space));
+      const takenSp   = bkgsHere.map(b=>b.space);
       const freeCount = spaces.filter(s=>!takenSp.includes(s)).length;
       let cls='cal-cell', label='';
       if (freeCount===total)  { cls+=' free-all'; label=total===1?'Available':`${freeCount} of ${total} free`; }
@@ -668,104 +835,6 @@ function renderCalendar() {
     html += '</tr>';
   });
   tbl.innerHTML = html + '</tbody>';
-}
-
-// ── RENDER: HOST PILLS ───────────────────────────────────────────────────
-function renderHostPills() {
-  const groups = {
-    sales:       TEAM.filter(m=>['Sales','Internal','GM'].includes(m.role)),
-    engineering: TEAM.filter(m=>m.role==='Engineering'),
-    other:       TEAM.filter(m=>['ID','Other'].includes(m.role))
-  };
-  ['sales','engineering','other'].forEach(g => {
-    const el = document.getElementById(`host-pills-${g}`);
-    if (!el) return;
-    el.innerHTML = groups[g].map(m => {
-      const name  = fullName(m);
-      const rc    = RC[m.role]||RC.Other;
-      const isSel = selectedHosts.includes(name);
-      return `<button class="host-pill" onclick="toggleHost('${name.replace(/'/g,"\\'")}')"
-        style="${isSel?`background:${rc.bg};border-color:${rc.border};color:${rc.color};font-weight:500;`:''}"
-      >${m.first} ${m.last?m.last[0]+'.':''}</button>`;
-    }).join('');
-  });
-  const row = document.getElementById('selected-hosts-row');
-  row.innerHTML = selectedHosts.map(h => {
-    const m  = TEAM.find(x=>fullName(x)===h);
-    const rc = m?(RC[m.role]||RC.Other):RC.Other;
-    return `<span class="selected-host-chip" style="background:${rc.bg};color:${rc.color};border:0.5px solid ${rc.border};">${h} <span onclick="toggleHost('${h.replace(/'/g,"\\'")}',true)" style="cursor:pointer;opacity:.6;margin-left:2px;">✕</span></span>`;
-  }).join('');
-}
-
-function toggleHost(name, remove=false) {
-  if (remove || selectedHosts.includes(name)) selectedHosts = selectedHosts.filter(h=>h!==name);
-  else selectedHosts.push(name);
-  renderHostPills();
-}
-
-// ── RENDER: EDIT HOST PILLS ──────────────────────────────────────────────
-function renderEditHostPills() {
-  const groups = {
-    sales:       TEAM.filter(m=>['Sales','Internal','GM'].includes(m.role)),
-    engineering: TEAM.filter(m=>m.role==='Engineering'),
-    other:       TEAM.filter(m=>['ID','Other'].includes(m.role))
-  };
-  ['sales','engineering','other'].forEach(g => {
-    const el = document.getElementById(`edit-host-pills-${g}`);
-    if (!el) return;
-    el.innerHTML = groups[g].map(m => {
-      const name  = fullName(m);
-      const rc    = RC[m.role]||RC.Other;
-      const isSel = editHosts.includes(name);
-      return `<button class="host-pill" onclick="toggleEditHost('${name.replace(/'/g,"\\'")}')"
-        style="${isSel?`background:${rc.bg};border-color:${rc.border};color:${rc.color};font-weight:500;`:''}"
-      >${m.first} ${m.last?m.last[0]+'.':''}</button>`;
-    }).join('');
-  });
-  const row = document.getElementById('edit-selected-hosts-row');
-  row.innerHTML = editHosts.map(h => {
-    const m  = TEAM.find(x=>fullName(x)===h);
-    const rc = m?(RC[m.role]||RC.Other):RC.Other;
-    return `<span class="selected-host-chip" style="background:${rc.bg};color:${rc.color};border:0.5px solid ${rc.border};">${h} <span onclick="toggleEditHost('${h.replace(/'/g,"\\'")}',true)" style="cursor:pointer;opacity:.6;margin-left:2px;">✕</span></span>`;
-  }).join('');
-}
-
-function toggleEditHost(name, remove=false) {
-  if (remove || editHosts.includes(name)) editHosts = editHosts.filter(h=>h!==name);
-  else editHosts.push(name);
-  renderEditHostPills();
-}
-
-// ── SLOT / SPACE / DAY SELECTION ─────────────────────────────────────────
-function selectDay(el, day) {
-  document.querySelectorAll('.day-tab').forEach(t=>t.classList.remove('active'));
-  el.classList.add('active');
-  currentDay=day; selectedSlot=null; selectedSpace=null;
-  renderSlots(); renderSpacePills();
-}
-
-function selectSlot(time) {
-  if (selectedSlot===time) { selectedSlot=null; selectedSpace=null; }
-  else { selectedSlot=time; selectedSpace=null; }
-  renderSlots(); renderSpacePills();
-}
-
-function selectSpace(space) {
-  selectedSpace = selectedSpace===space ? null : space;
-  renderSpacePills();
-}
-
-function selectCalSpace(el, space) {
-  document.querySelectorAll('.cal-space-tab').forEach(t=>t.classList.remove('active'));
-  el.classList.add('active');
-  calSpace=space; renderCalendar();
-}
-
-// ── HOST FILTER ──────────────────────────────────────────────────────────
-function populateHostFilter() {
-  const sel = document.getElementById('filter-host');
-  sel.innerHTML = '<option value="">All hosts</option>' +
-    TEAM.map(m=>`<option>${fullName(m)}</option>`).join('');
 }
 
 // ── BOOK ─────────────────────────────────────────────────────────────────
@@ -791,6 +860,7 @@ async function bookMeeting() {
   document.getElementById('f-company').value='';
   document.getElementById('f-topic').value='';
   document.getElementById('f-product-area').value='';
+  renderProductAreaPills('f');
   document.getElementById('f-attendees').value='1';
   document.getElementById('f-notes').value='';
   selectedSlot=null; selectedSpace=null; selectedHosts=[];
@@ -818,6 +888,7 @@ function openEdit(idx) {
   document.getElementById('edit-attendees').value    = b.attendees||'1';
   document.getElementById('edit-notes').value        = b.notes||'';
   document.getElementById('edit-slot-info').textContent = `${b.day} · ${b.time} — changing day/time requires rebooking`;
+  renderProductAreaPills('edit');
   editHosts = Array.isArray(b.hosts) ? [...b.hosts] : (b.railTeam||'').split(',').map(h=>h.trim()).filter(Boolean);
   renderEditHostPills();
   document.getElementById('edit-modal').classList.add('open');
@@ -825,11 +896,11 @@ function openEdit(idx) {
 
 function closeEdit() {
   document.getElementById('edit-modal').classList.remove('open');
-  editingBooking = null; editHosts = [];
+  editingBooking=null; editHosts=[];
 }
 
 function handleOverlayClick(e) {
-  if (e.target === document.getElementById('edit-modal')) closeEdit();
+  if (e.target===document.getElementById('edit-modal')) closeEdit();
 }
 
 async function saveEdit() {
@@ -873,7 +944,7 @@ function renderList() {
   const paF     = document.getElementById('filter-product-area').value;
 
   const filtered = bookings
-    .map((b,i) => ({...b, _idx:i}))
+    .map((b,i) => ({...b,_idx:i}))
     .filter(b =>
       (!searchF || (b.visitorName||b.name||'').toLowerCase().includes(searchF) || (b.company||'').toLowerCase().includes(searchF)) &&
       (!dayF    || b.day===dayF) &&
@@ -893,10 +964,10 @@ function renderList() {
   empty.style.display='none';
 
   list.innerHTML = filtered.map(b => {
-    const isPriv    = b.spaceType==='private';
-    const visName   = b.visitorName||b.name||'—';
-    const hostsArr  = Array.isArray(b.hosts) ? b.hosts : (b.railTeam||'').split(',').map(h=>h.trim()).filter(Boolean);
-    const hostTags  = hostsArr.map(h => {
+    const isPriv   = b.spaceType==='private';
+    const visName  = b.visitorName||b.name||'—';
+    const hostsArr = Array.isArray(b.hosts) ? b.hosts : (b.railTeam||'').split(',').map(h=>h.trim()).filter(Boolean);
+    const hostTags = hostsArr.map(h => {
       const m  = TEAM.find(x=>fullName(x)===h.trim());
       const rc = m?(RC[m.role]||RC.Other):RC.Other;
       return `<span style="display:inline-block;font-size:10px;padding:1px 7px;border-radius:10px;background:${rc.bg};color:${rc.color};border:0.5px solid ${rc.border};margin-right:3px;">${h}</span>`;
@@ -940,7 +1011,7 @@ function renderTeam() {
   const hosting = Object.keys(hostCounts).length;
   document.getElementById('stat-hosts').textContent = hosting;
   document.getElementById('stat-avg').textContent   = hosting>0 ? (bookings.length/hosting).toFixed(1) : '0';
-  grid.innerHTML = TEAM.map(m => {
+  grid.innerHTML = REAL_TEAM.map(m => {
     const name  = fullName(m);
     const rc    = RC[m.role]||RC.Other;
     const count = hostCounts[name]||0;
@@ -994,6 +1065,8 @@ function exportCSV() {
 }
 
 // ── INIT ─────────────────────────────────────────────────────────────────
+renderProductAreaPills('f');
+renderProductAreaPills('edit');
 renderHostPills();
 populateHostFilter();
 loadBookings();
