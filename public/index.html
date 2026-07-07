@@ -466,7 +466,7 @@ let selectedHosts=[], editHosts=[], editingBooking=null, calSpace='all';
 let bookings=[], availability=[];
 
 // ── NOTION PROXY (Cloudflare function — uses NOTION_TOKEN env var) ────────
-const APP_SECRET = 'PASTE_YOUR_APP_SECRET_VALUE_HERE';
+const APP_SECRET = 'X-App-Secret-4yhgjhgu77guygiuyf67ifi6';
 
 async function notionProxy(path, method, body) {
   const res = await fetch('/api/notion', {
