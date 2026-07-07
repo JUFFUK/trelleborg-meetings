@@ -466,12 +466,15 @@ let selectedHosts=[], editHosts=[], editingBooking=null, calSpace='all';
 let bookings=[], availability=[];
 
 // ── NOTION PROXY (Cloudflare function — uses NOTION_TOKEN env var) ────────
-function richText(str){ return [{type:'text',text:{content:str||''}}]; }
+const APP_SECRET = 'PASTE_YOUR_APP_SECRET_VALUE_HERE';
 
 async function notionProxy(path, method, body) {
   const res = await fetch('/api/notion', {
     method: 'POST',
-    headers: {'Content-Type':'application/json'},
+    headers: {
+      'Content-Type': 'application/json',
+      'X-App-Secret': APP_SECRET
+    },
     body: JSON.stringify({path, method, body})
   });
   if (!res.ok) { const e=await res.text(); throw new Error(`Proxy ${res.status}: ${e}`); }
