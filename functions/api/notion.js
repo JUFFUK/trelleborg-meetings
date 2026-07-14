@@ -1,6 +1,7 @@
 const ALLOWED_ORIGINS = new Set([
   'https://meetings.trelleborg.one',
-  'https://trelleborg.one'
+  'https://trelleborg.one',
+  'https://trelleborg-meetings.pages.dev'
 ]);
 
 // Only the Notion operations this app actually needs. Extend deliberately, never wildcard.
