@@ -39,17 +39,7 @@ export async function onRequest(context) {
   // and send the same value from the frontend as an X-App-Secret header.
   const providedSecret = request.headers.get('X-App-Secret') || '';
   if (!env.APP_SECRET || providedSecret !== env.APP_SECRET) {
-    // TEMPORARY DIAGNOSTICS, remove once the mismatch is found, reveals lengths only, never the actual values
-    return new Response(JSON.stringify({
-      error: 'Unauthorised',
-      debug: {
-        envSecretExists: !!env.APP_SECRET,
-        envSecretLength: env.APP_SECRET ? env.APP_SECRET.length : 0,
-        providedLength: providedSecret.length,
-        providedFirstChar: providedSecret.charAt(0),
-        providedLastChar: providedSecret.charAt(providedSecret.length - 1)
-      }
-    }), {
+    return new Response(JSON.stringify({ error: 'Unauthorised' }), {
       status: 401,
       headers: { 'Content-Type': 'application/json', ...headers }
     });
