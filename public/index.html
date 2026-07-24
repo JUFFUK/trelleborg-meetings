@@ -560,6 +560,7 @@ function initials(m){ return m.last?(m.first[0]+m.last[0]).toUpperCase():m.first
 function roleLabel(r){ return r==='ID'?'I & D':r==='Internal'?'Internal sales':r; }
 function spaceType(s){ return SPACES.private.includes(s)?'private':'informal'; }
 function getInitialsStr(n){ const p=n.trim().split(' '); return p.length>1?(p[0][0]+p[p.length-1][0]).toUpperCase():n.slice(0,2).toUpperCase(); }
+function richText(str){ return [{type:'text', text:{content: String(str==null?'':str)}}]; }
 
 let currentDay='Tue 22 Sep', selectedSlot=null, selectedSpace=null;
 let selectedHosts=[], editHosts=[], editingBooking=null, calSpace='all';
