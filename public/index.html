@@ -140,9 +140,45 @@
     /* Avail */
     .avail-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 0.5px solid var(--border-light); }
     .avail-row:last-child { border-bottom: none; }
+    .header-user { display: flex; align-items: center; gap: 10px; }
+    .header-user-name { font-size: 13px; color: var(--text-secondary); }
+    .header-logout-btn { padding: 5px 12px; border: 0.5px solid var(--border); border-radius: var(--radius-md); font-size: 12px; cursor: pointer; background: var(--bg); font-family: var(--font-sans); color: var(--text-secondary); }
+    .header-logout-btn:hover { background: var(--bg-secondary); color: var(--text-primary); }
+    #login-screen { position: fixed; inset: 0; background: var(--bg-secondary); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 1.5rem; }
+    .login-card { width: 100%; max-width: 340px; background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow); padding: 2rem 1.75rem; }
+    .login-logo { width: 32px; height: 32px; background: #1a1a18; border-radius: 6px; display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; }
+    .login-logo span { color: #fff; font-size: 14px; font-weight: 700; }
+    .login-title { font-size: 16px; font-weight: 600; text-align: center; }
+    .login-sub { font-size: 12px; color: var(--text-tertiary); text-align: center; margin-top: 4px; margin-bottom: 22px; }
+    .login-field { margin-bottom: 12px; }
+    .login-field label { display: block; font-size: 12px; font-weight: 500; color: var(--text-secondary); margin-bottom: 5px; }
+    .login-field input { width: 100%; padding: 9px 11px; border: 0.5px solid var(--border); border-radius: var(--radius-md); font-size: 14px; font-family: var(--font-sans); }
+    .login-field input:focus { outline: none; border-color: #1a1a18; }
+    .login-btn { width: 100%; margin-top: 6px; padding: 10px; border: 0; border-radius: var(--radius-md); background: #1a1a18; color: #fff; font-size: 14px; font-weight: 500; cursor: pointer; font-family: var(--font-sans); }
+    .login-btn:hover { background: #333; }
+    .login-btn:disabled { opacity: 0.6; cursor: default; }
+    .login-error { font-size: 12px; color: #b42318; margin-top: 10px; text-align: center; display: none; }
   </style>
 </head>
 <body>
+
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo"><span>T</span></div>
+    <div class="login-title">InnoTrans 2026</div>
+    <div class="login-sub">Sign in to the Meeting Scheduler</div>
+    <div class="login-field">
+      <label>Email</label>
+      <input type="email" id="login-email" autocomplete="username" placeholder="you@trelleborg.com">
+    </div>
+    <div class="login-field">
+      <label>Password</label>
+      <input type="password" id="login-password" autocomplete="current-password">
+    </div>
+    <button class="login-btn" id="login-btn" onclick="doLogin()">Sign in</button>
+    <div class="login-error" id="login-error"></div>
+  </div>
+</div>
 
 <!-- EDIT MODAL -->
 <div class="modal-overlay" id="edit-modal" onclick="handleOverlayClick(event)">
@@ -199,6 +235,7 @@
   </div>
 </div>
 
+<div id="app-shell" style="display:none;">
 <header>
   <div class="header-inner">
     <div class="header-brand">
@@ -208,7 +245,11 @@
         <div class="header-sub">Meeting Scheduler · Messe Berlin · 22–25 Sep</div>
       </div>
     </div>
-    <span class="notion-pill"><i class="ti ti-brand-notion" style="font-size:13px;"></i> Synced with Notion</span>
+    <div class="header-user">
+      <span class="notion-pill"><i class="ti ti-brand-notion" style="font-size:13px;"></i> Synced with Notion</span>
+      <span class="header-user-name" id="header-user-name"></span>
+      <button class="header-logout-btn" onclick="doLogout()">Sign out</button>
+    </div>
   </div>
 </header>
 
@@ -385,6 +426,7 @@
     </div>
   </div>
 </main>
+</div>
 
 <script>
 // ── CONFIG ───────────────────────────────────────────────────────────────
@@ -465,18 +507,103 @@ let currentDay='Tue 22 Sep', selectedSlot=null, selectedSpace=null;
 let selectedHosts=[], editHosts=[], editingBooking=null, calSpace='all';
 let bookings=[], availability=[];
 
-// ── NOTION PROXY (Cloudflare function — uses NOTION_TOKEN env var) ────────
+// ── AUTH / SESSION ──────────────────────────────────────────────────────
 const APP_SECRET = 'X-App-Secret-4yhgjhgu77guygiuyf67ifi6';
+const SESSION_KEY = 'innotrans_meetings_session_v1';
 
-async function notionProxy(path, method, body) {
+function getSession() {
+  try { return JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); }
+  catch(e) { return null; }
+}
+function setSession(s) { localStorage.setItem(SESSION_KEY, JSON.stringify(s)); }
+function clearSession() { localStorage.removeItem(SESSION_KEY); }
+
+async function authCall(action, extra) {
+  const session = getSession();
   const res = await fetch('/api/notion', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-App-Secret': APP_SECRET
+      'X-App-Secret': APP_SECRET,
+      ...(session && session.token ? {'Authorization': `Bearer ${session.token}`} : {})
+    },
+    body: JSON.stringify({action, ...extra})
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || `Auth ${res.status}`);
+  return data;
+}
+
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  const errEl = document.getElementById('login-error');
+  const btn = document.getElementById('login-btn');
+  errEl.style.display = 'none';
+  if (!email || !password) { errEl.textContent = 'Enter your email and password.'; errEl.style.display = 'block'; return; }
+  btn.disabled = true; btn.textContent = 'Signing in…';
+  try {
+    const data = await authCall('login', {email, password});
+    setSession({token: data.token, name: data.name, email: data.email, role: data.role});
+    await showApp();
+  } catch (e) {
+    errEl.textContent = e.message || 'Invalid email or password.';
+    errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Sign in';
+  }
+}
+
+async function doLogout() {
+  try { await authCall('logout', {}); } catch(e) {}
+  clearSession();
+  location.reload();
+}
+
+async function checkSessionAndInit() {
+  const session = getSession();
+  if (!session || !session.token) { showLogin(); return; }
+  try {
+    const data = await authCall('verify', {});
+    if (!data.valid) { clearSession(); showLogin(); return; }
+    await showApp();
+  } catch (e) {
+    clearSession(); showLogin();
+  }
+}
+
+function showLogin() {
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app-shell').style.display = 'none';
+}
+
+async function showApp() {
+  const session = getSession();
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app-shell').style.display = 'block';
+  document.getElementById('header-user-name').textContent = session ? session.name : '';
+  renderProductAreaPills('f');
+  renderProductAreaPills('edit');
+  renderHostPills();
+  populateHostFilter();
+  populateAvailPerson();
+  populateAvailTimes();
+  await loadAll();
+}
+
+// ── NOTION PROXY (Cloudflare function — uses NOTION_TOKEN env var) ────────
+async function notionProxy(path, method, body) {
+  const session = getSession();
+  const res = await fetch('/api/notion', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-App-Secret': APP_SECRET,
+      ...(session && session.token ? {'Authorization': `Bearer ${session.token}`} : {})
     },
     body: JSON.stringify({path, method, body})
   });
+  if (res.status === 401) { clearSession(); showLogin(); throw new Error('Session expired, please sign in again.'); }
   if (!res.ok) { const e=await res.text(); throw new Error(`Proxy ${res.status}: ${e}`); }
   return res.json();
 }
@@ -1084,13 +1211,8 @@ function exportCSV(){
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────────
-renderProductAreaPills('f');
-renderProductAreaPills('edit');
-renderHostPills();
-populateHostFilter();
-populateAvailPerson();
-populateAvailTimes();
-loadAll();
+document.getElementById('login-password').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+checkSessionAndInit();
 </script>
 </body>
 </html>
