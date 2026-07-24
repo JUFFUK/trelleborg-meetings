@@ -242,6 +242,25 @@
   </div>
 </div>
 
+<!-- CHANGE PASSWORD MODAL -->
+<div class="modal-overlay" id="password-modal" onclick="handlePasswordOverlayClick(event)">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-title"><i class="ti ti-key" style="vertical-align:-2px;margin-right:6px;"></i>Change password</span>
+      <button class="modal-close" onclick="closeChangePassword()">✕</button>
+    </div>
+    <div class="field"><label>Current password</label><input type="password" id="pw-current" autocomplete="current-password"></div>
+    <div class="field"><label>New password</label><input type="password" id="pw-new" autocomplete="new-password"></div>
+    <div class="field"><label>Confirm new password</label><input type="password" id="pw-confirm" autocomplete="new-password"></div>
+    <div class="login-error" id="pw-error" style="display:none;"></div>
+    <div class="success-msg" id="pw-success" style="display:none;"></div>
+    <div class="modal-footer">
+      <button class="btn-outline" onclick="closeChangePassword()">Cancel</button>
+      <button class="btn-primary" id="pw-save-btn" onclick="submitChangePassword()"><i class="ti ti-check"></i> Update password</button>
+    </div>
+  </div>
+</div>
+
 <div id="app-shell" style="display:none;">
 <header>
   <div class="header-inner">
@@ -255,6 +274,7 @@
     <div class="header-user">
       <span class="notion-pill"><i class="ti ti-brand-notion" style="font-size:13px;"></i> Synced with Notion</span>
       <span class="header-user-name" id="header-user-name"></span>
+      <button class="header-logout-btn" onclick="openChangePassword()">Change password</button>
       <button class="header-logout-btn" onclick="doLogout()">Sign out</button>
     </div>
   </div>
@@ -590,6 +610,48 @@ async function doLogout() {
   try { await authCall('logout', {}); } catch(e) {}
   clearSession();
   location.reload();
+}
+
+// ── CHANGE PASSWORD ──────────────────────────────────────────────────────
+function openChangePassword() {
+  document.getElementById('pw-current').value = '';
+  document.getElementById('pw-new').value = '';
+  document.getElementById('pw-confirm').value = '';
+  document.getElementById('pw-error').style.display = 'none';
+  document.getElementById('pw-success').style.display = 'none';
+  document.getElementById('password-modal').classList.add('open');
+}
+function closeChangePassword() { document.getElementById('password-modal').classList.remove('open'); }
+function handlePasswordOverlayClick(e) { if (e.target === document.getElementById('password-modal')) closeChangePassword(); }
+
+async function submitChangePassword() {
+  const current = document.getElementById('pw-current').value;
+  const next = document.getElementById('pw-new').value;
+  const confirm = document.getElementById('pw-confirm').value;
+  const errEl = document.getElementById('pw-error');
+  const okEl = document.getElementById('pw-success');
+  const btn = document.getElementById('pw-save-btn');
+  errEl.style.display = 'none'; okEl.style.display = 'none';
+
+  if (!current || !next || !confirm) { errEl.textContent = 'Fill in all three fields.'; errEl.style.display = 'block'; return; }
+  if (next.length < 10) { errEl.textContent = 'New password must be at least 10 characters.'; errEl.style.display = 'block'; return; }
+  if (next !== confirm) { errEl.textContent = 'New password and confirmation don\u2019t match.'; errEl.style.display = 'block'; return; }
+
+  btn.disabled = true; btn.textContent = 'Updating…';
+  try {
+    await authCall('change-password', {currentPassword: current, newPassword: next});
+    okEl.textContent = 'Password updated. Use it next time you sign in.';
+    okEl.style.display = 'block';
+    document.getElementById('pw-current').value = '';
+    document.getElementById('pw-new').value = '';
+    document.getElementById('pw-confirm').value = '';
+    setTimeout(closeChangePassword, 1800);
+  } catch (e) {
+    errEl.textContent = e.message || 'Could not update password.';
+    errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Update password';
+  }
 }
 
 // ── ADMIN PANEL (manager only) ──────────────────────────────────────────
@@ -1311,5 +1373,4 @@ document.getElementById('login-password').addEventListener('keydown', e => { if 
 checkSessionAndInit();
 </script>
 </body>
-  <!-- redeploy trigger --->
 </html>
