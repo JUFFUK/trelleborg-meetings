@@ -174,6 +174,28 @@ export async function onRequest(context) {
       return json({ success: true }, 200, headers);
     }
 
+    if (payload.action === 'delete-user') {
+      const session = await getSession(request, env);
+      if (!session) return json({ error: 'Unauthorised' }, 401, headers);
+      if (session.role !== 'manager') return json({ error: 'Manager access required' }, 403, headers);
+      const { email } = payload;
+      if (!email) return json({ error: 'Email required' }, 400, headers);
+      const targetEmail = email.toLowerCase();
+      if (targetEmail === session.userId) {
+        return json({ error: "You can't delete your own account, ask another manager" }, 400, headers);
+      }
+      const user = await env.USERS.get('user:' + targetEmail);
+      if (!user) return json({ error: 'User not found' }, 404, headers);
+      await env.USERS.delete('user:' + targetEmail);
+      // Revoke any active sessions for this user immediately, rather than waiting for TTL expiry
+      const list = await env.USERS.list({ prefix: 'session:' });
+      for (const key of list.keys) {
+        const s = await env.USERS.get(key.name, { type: 'json' });
+        if (s && s.userId === targetEmail) await env.USERS.delete(key.name);
+      }
+      return json({ success: true }, 200, headers);
+    }
+
     if (payload.action === 'change-password') {
       const session = await getSession(request, env);
       if (!session) return json({ error: 'Session expired, please sign in again' }, 401, headers);
