@@ -17,9 +17,51 @@ function corsHeaders(origin) {
   return {
     'Access-Control-Allow-Origin': allowed,
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, X-App-Secret',
+    'Access-Control-Allow-Headers': 'Content-Type, X-App-Secret, Authorization',
     'Vary': 'Origin'
   };
+}
+
+function json(data, status, headers) {
+  return new Response(JSON.stringify(data), { status, headers: { 'Content-Type': 'application/json', ...headers } });
+}
+
+// ── Password hashing (Web Crypto, no dependencies) ─────────────────────────
+async function hashPassword(password) {
+  const encoder = new TextEncoder();
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const keyMaterial = await crypto.subtle.importKey('raw', encoder.encode(password), 'PBKDF2', false, ['deriveBits']);
+  const hashBuffer = await crypto.subtle.deriveBits({ name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' }, keyMaterial, 256);
+  const saltHex = Array.from(salt).map(b => b.toString(16).padStart(2, '0')).join('');
+  const hashHex = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+  return saltHex + ':' + hashHex;
+}
+
+async function verifyPassword(password, stored) {
+  const encoder = new TextEncoder();
+  const [saltHex, hashHex] = (stored || '').split(':');
+  if (!saltHex || !hashHex) return false;
+  const salt = new Uint8Array(saltHex.match(/.{2}/g).map(b => parseInt(b, 16)));
+  const keyMaterial = await crypto.subtle.importKey('raw', encoder.encode(password), 'PBKDF2', false, ['deriveBits']);
+  const hashBuffer = await crypto.subtle.deriveBits({ name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' }, keyMaterial, 256);
+  const newHashHex = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+  return newHashHex === hashHex;
+}
+
+function generateToken() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let token = '';
+  const arr = crypto.getRandomValues(new Uint8Array(64));
+  arr.forEach(b => { token += chars[b % chars.length]; });
+  return token;
+}
+
+async function getSession(request, env) {
+  const token = (request.headers.get('Authorization') || '').replace('Bearer ', '').trim();
+  if (!token) return null;
+  const session = await env.USERS.get('session:' + token, { type: 'json' });
+  if (!session || Date.now() > session.expiry) return null;
+  return session;
 }
 
 export async function onRequest(context) {
@@ -39,24 +81,82 @@ export async function onRequest(context) {
   // and send the same value from the frontend as an X-App-Secret header.
   const providedSecret = request.headers.get('X-App-Secret') || '';
   if (!env.APP_SECRET || providedSecret !== env.APP_SECRET) {
-    return new Response(JSON.stringify({ error: 'Unauthorised' }), {
-      status: 401,
-      headers: { 'Content-Type': 'application/json', ...headers }
-    });
+    return json({ error: 'Unauthorised' }, 401, headers);
   }
 
+  let payload;
   try {
-    const { path, method, body } = await request.json();
+    payload = await request.json();
+  } catch (e) {
+    return json({ error: 'Invalid request body' }, 400, headers);
+  }
+
+  // ── AUTH ACTIONS ──────────────────────────────────────────────────────
+  // Reuses the same TRELLEBORG_USERS KV namespace as the Lead Capture app,
+  // bound here as USERS, so existing accounts work immediately.
+  if (payload.action) {
+    if (!env.USERS) return json({ error: 'USERS KV not bound for this project yet' }, 500, headers);
+
+    if (payload.action === 'login') {
+      const { email, password } = payload;
+      if (!email || !password) return json({ error: 'Email and password required' }, 400, headers);
+      const user = await env.USERS.get('user:' + email.toLowerCase(), { type: 'json' });
+      if (!user) return json({ error: 'Invalid email or password' }, 401, headers);
+      const valid = user.passwordHash ? await verifyPassword(password, user.passwordHash) : false;
+      if (!valid) return json({ error: 'Invalid email or password' }, 401, headers);
+      const token = generateToken();
+      const expiry = Date.now() + 8 * 60 * 60 * 1000;
+      await env.USERS.put('user:' + email.toLowerCase(), JSON.stringify({
+        ...user, lastLoginAt: new Date().toISOString()
+      }));
+      await env.USERS.put('session:' + token, JSON.stringify({
+        userId: email.toLowerCase(), name: user.name, role: user.role, expiry
+      }), { expirationTtl: 28800 });
+      return json({ token, name: user.name, email: email.toLowerCase(), role: user.role }, 200, headers);
+    }
+
+    if (payload.action === 'verify') {
+      const session = await getSession(request, env);
+      if (!session) return json({ valid: false }, 401, headers);
+      return json({ valid: true, name: session.name, email: session.userId, role: session.role }, 200, headers);
+    }
+
+    if (payload.action === 'logout') {
+      const token = (request.headers.get('Authorization') || '').replace('Bearer ', '').trim();
+      if (token) await env.USERS.delete('session:' + token);
+      return json({ success: true }, 200, headers);
+    }
+
+    if (payload.action === 'register') {
+      const { email, password, name, role, adminSecret } = payload;
+      if (!email || !password || !name) return json({ error: 'Name, email and password required' }, 400, headers);
+      if (!env.ADMIN_SECRET || adminSecret !== env.ADMIN_SECRET) return json({ error: 'Invalid admin secret' }, 403, headers);
+      const existing = await env.USERS.get('user:' + email.toLowerCase());
+      if (existing) return json({ error: 'User already exists' }, 409, headers);
+      const passwordHash = await hashPassword(password);
+      await env.USERS.put('user:' + email.toLowerCase(), JSON.stringify({
+        name, email: email.toLowerCase(),
+        role: role === 'manager' ? 'manager' : 'team',
+        passwordHash, createdAt: new Date().toISOString(),
+        lastLoginAt: null
+      }));
+      return json({ success: true }, 200, headers);
+    }
+
+    return json({ error: 'Unknown action' }, 400, headers);
+  }
+
+  // ── NOTION PROXY (now requires a valid signed-in session too) ──────────
+  const session = await getSession(request, env);
+  if (!session) return json({ error: 'Session expired, please sign in again' }, 401, headers);
+
+  try {
+    const { path, method, body } = payload;
 
     const isAllowed = ALLOWED_PATHS.some(
       rule => rule.method === (method || 'GET') && rule.pattern.test(path)
     );
-    if (!isAllowed) {
-      return new Response(JSON.stringify({ error: 'Operation not permitted' }), {
-        status: 403,
-        headers: { 'Content-Type': 'application/json', ...headers }
-      });
-    }
+    if (!isAllowed) return json({ error: 'Operation not permitted' }, 403, headers);
 
     const upstream = await fetch(`https://api.notion.com${path}`, {
       method: method || 'GET',
@@ -69,15 +169,8 @@ export async function onRequest(context) {
     });
 
     const data = await upstream.json();
-
-    return new Response(JSON.stringify(data), {
-      status: upstream.status,
-      headers: { 'Content-Type': 'application/json', ...headers },
-    });
+    return json(data, upstream.status, headers);
   } catch (e) {
-    return new Response(JSON.stringify({ error: e.message }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json', ...headers },
-    });
+    return json({ error: e.message }, 500, headers);
   }
 }
