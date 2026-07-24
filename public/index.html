@@ -683,6 +683,7 @@ async function renderAdminUsers() {
         </div>
         <div class="admin-user-actions">
           <button class="btn-outline" onclick="adminResetPassword('${u.email.replace(/'/g,"\\'")}')"><i class="ti ti-key"></i> Reset password</button>
+          <button class="btn-outline" style="color:#b42318;border-color:#e8b4ac;" onclick="adminDeleteUser('${u.email.replace(/'/g,"\\'")}', '${u.name.replace(/'/g,"\\'")}')"><i class="ti ti-trash"></i> Delete</button>
         </div>
       </div>
     `).join('');
@@ -718,6 +719,18 @@ async function adminResetPassword(email) {
   try {
     await authCall('admin-reset-password', {email, newPassword});
     showAdminMsg('success', `<i class="ti ti-check"></i> Password reset for ${email}. Tell them their new temporary password, and to keep it safe.`);
+  } catch (e) {
+    showAdminMsg('error', `<i class="ti ti-alert-circle"></i> ${e.message}`);
+  }
+}
+
+async function adminDeleteUser(email, name) {
+  const confirmed = confirm(`Delete ${name}'s account (${email})?\n\nThey'll be signed out immediately and won't be able to log back in until a new account is created for them. This can't be undone.`);
+  if (!confirmed) return;
+  try {
+    await authCall('delete-user', {email});
+    showAdminMsg('success', `<i class="ti ti-check"></i> ${name}'s account has been deleted.`);
+    renderAdminUsers();
   } catch (e) {
     showAdminMsg('error', `<i class="ti ti-alert-circle"></i> ${e.message}`);
   }
