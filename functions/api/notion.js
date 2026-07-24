@@ -174,6 +174,21 @@ export async function onRequest(context) {
       return json({ success: true }, 200, headers);
     }
 
+    if (payload.action === 'change-password') {
+      const session = await getSession(request, env);
+      if (!session) return json({ error: 'Session expired, please sign in again' }, 401, headers);
+      const { currentPassword, newPassword } = payload;
+      if (!currentPassword || !newPassword) return json({ error: 'Current and new password required' }, 400, headers);
+      if (newPassword.length < 10) return json({ error: 'New password must be at least 10 characters' }, 400, headers);
+      const user = await env.USERS.get('user:' + session.userId, { type: 'json' });
+      if (!user) return json({ error: 'Account not found' }, 404, headers);
+      const valid = user.passwordHash ? await verifyPassword(currentPassword, user.passwordHash) : false;
+      if (!valid) return json({ error: 'Current password is incorrect' }, 401, headers);
+      const passwordHash = await hashPassword(newPassword);
+      await env.USERS.put('user:' + session.userId, JSON.stringify({ ...user, passwordHash }));
+      return json({ success: true }, 200, headers);
+    }
+
     return json({ error: 'Unknown action' }, 400, headers);
   }
 
