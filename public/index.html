@@ -21,16 +21,20 @@
     header { background: var(--bg); border-bottom: 0.5px solid var(--border); padding: 0 1.5rem; position: sticky; top: 0; z-index: 100; }
     .header-inner { max-width: 960px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 56px; gap: 12px; }
     .header-brand { display: flex; align-items: center; gap: 10px; }
+    .header-divider { width: 1px; height: 18px; background: var(--border); }
+    .header-app-label { font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text-secondary); }
+    .event-line { font-size: 13px; color: var(--text-primary); margin-bottom: 1rem; }
+    .event-line strong { font-weight: 600; }
     .header-logo { height: 24px; display: flex; align-items: center; }
     .header-logo svg { height: 24px; width: auto; display: block; }
     .header-title { font-size: 15px; font-weight: 600; }
     .header-sub { font-size: 12px; color: var(--text-tertiary); margin-top: 1px; }
     .notion-pill { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-tertiary); padding: 4px 10px; border: 0.5px solid var(--border); border-radius: 20px; background: var(--bg-secondary); }
     main { max-width: 960px; margin: 0 auto; padding: 1.5rem; }
-    .tabs { display: flex; gap: 6px; margin-bottom: 1.5rem; flex-wrap: wrap; }
-    .tab { padding: 7px 16px; border: 0.5px solid var(--border); border-radius: var(--radius-md); font-size: 13px; font-weight: 500; cursor: pointer; color: var(--text-secondary); background: var(--bg); font-family: var(--font-sans); display: inline-flex; align-items: center; gap: 6px; transition: all .15s; }
-    .tab.active { background: #1a1a18; color: #fff; border-color: #1a1a18; }
-    .tab:hover:not(.active) { background: var(--bg-secondary); color: var(--text-primary); }
+    .tabs { display: inline-flex; gap: 4px; margin-bottom: 1.5rem; flex-wrap: wrap; background: var(--bg-secondary); padding: 4px; border-radius: var(--radius-lg); border: 0.5px solid var(--border); }
+    .tab { padding: 7px 14px; border: none; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; color: var(--text-secondary); background: transparent; font-family: var(--font-sans); display: inline-flex; align-items: center; gap: 6px; transition: all .15s; }
+    .tab.active { background: #1a1a18; color: #fff; }
+    .tab:hover:not(.active) { background: rgba(0,0,0,0.05); color: var(--text-primary); }
     .view { display: none; } .view.active { display: block; }
     .card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1rem; box-shadow: var(--shadow); }
     .section-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--text-tertiary); margin-bottom: 10px; }
@@ -268,10 +272,8 @@
   <div class="header-inner">
     <div class="header-brand">
       <div class="header-logo"><svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="80 328 440 195" style="enable-background:new 80 328 440 195;" xml:space="preserve"> <style type="text/css"> .st0{fill:#998242;} </style> <g> <g> <polygon class="st0" points="222.36,345.86 222.36,353.8 245.5,353.8 245.5,395.91 253.44,395.91 253.44,353.8 276.57,353.8 276.57,345.86 "/> <path class="st0" d="M345.8,429.99l60.69-97.38h-217.7l60.69,97.38l15.99-25.66l16.41,25.66l15.99-25.66l15.98,25.66l15.94-25.58 L345.8,429.99z M390.47,341.55l-44.67,71.67l-10.72-17.26l33.9-54.4L390.47,341.55L390.47,341.55z M249.48,413.21l-44.52-71.67 h13.64h75.55L249.48,413.21z M270.81,395.76l33.78-54.21h21.95l-44.67,71.67L270.81,395.76z M303.21,395.76L337,341.55h21.53 l-44.67,71.67L303.21,395.76z"/> </g> <path fill="#1A1916" d="M85.04,454.45c1.08-1.18,1.15-2.43,4.95-2.43h10.46v51.26c0,3.3-0.5,3.69-1.94,4.79h11.04c-1.43-1.1-1.93-1.49-1.93-4.79 v-51.26h10.61c3.66,0,3.73,1.26,4.8,2.43v-7.93H85.04V454.45z"/> <path fill="#1A1916" d="M165.15,503.28l-12.47-25.18c8.89-1.73,13.04-8.87,13.04-14.37c0-12.01-6.38-16.96-21.79-16.96h-16.48 c1.43,1.1,1.94,1.49,1.94,4.79v51.71c0,3.3-0.5,3.69-1.94,4.79h11.04c-1.43-1.1-1.94-1.49-1.94-4.79V479.2v-5.5v-21.43h7.38 c10.97,0,14.62,4.71,14.62,11.38c0,10.05-10.35,10.32-15.72,10.32l2.89,5.23l13.83,28.87h9.39 C167.73,507.04,167.37,506.89,165.15,503.28z"/> <path fill="#1A1916" d="M457.11,503.28l-12.47-25.18c8.89-1.73,13.04-8.87,13.04-14.37c0-12.01-6.38-16.96-21.79-16.96h-16.48 c1.43,1.1,1.94,1.49,1.94,4.79v51.71c0,3.3-0.5,3.69-1.94,4.79h11.04c-1.43-1.1-1.93-1.49-1.93-4.79V479.2v-5.5v-21.43h7.38 c10.97,0,14.62,4.71,14.62,11.38c0,10.05-10.35,10.32-15.72,10.32l2.89,5.23l13.83,28.87h9.39 C459.69,507.04,459.33,506.89,457.11,503.28z"/> <path fill="#1A1916" d="M175.41,451.53v51.75c0,3.3-0.5,3.69-1.93,4.79h32.75v-8.01c-0.93,1.1-1,2.51-4.87,2.51h-18.78v-25.45l13.2,0.28 c3.8,0,3.8,0.86,4.52,1.8v-9.11c-0.86,1.1-1,1.81-4.73,1.81l-12.98-0.28v-19.39h18.78c3.94,0,4.16,1.57,4.87,2.51v-8.01h-32.75 C174.91,447.84,175.41,448.23,175.41,451.53z"/> <path fill="#1A1916" d="M235.35,502.57H221.2v-51.32c0-3.3,0.5-3.69,1.93-4.79H212.1c1.43,1.1,1.94,1.49,1.94,4.79v52.03c0,3.3-0.5,3.69-1.94,4.79 h28.13v-8.01C239.37,501,239.22,502.57,235.35,502.57z"/> <path fill="#1A1916" d="M267.35,502.57h-13.18v-51.32c0-3.3,0.5-3.69,1.94-4.79h-11.04c1.43,1.1,1.94,1.49,1.94,4.79v52.03 c0,3.3-0.5,3.69-1.94,4.79h27.15v-8.01C271.37,501,271.23,502.57,267.35,502.57z"/> <path fill="#1A1916" d="M279.41,455.34v51.15c0,0.08-0.5,0.48-1.93,1.58h32.75v-8.01c-0.93,1.1-1,2.51-4.87,2.51h-18.78V476.7l14.03,0.28 c3.8,0,3.8,0.86,4.52,1.81v-9.11c-0.86,1.1-1,1.8-4.73,1.8l-13.81-0.28v-18.38h18.78c3.94,0,4.16,1.57,4.87,2.51v-8.01h-32.75 C278.91,448.44,279.41,448.83,279.41,455.34z"/> <path fill="#1A1916" d="M342.46,475.42v-0.16c4.59-0.78,10.39-4.84,10.39-13.71c0-12.87-11.11-14.21-21.29-14.21H316.3 c1.43,1.1,1.93,1.49,1.93,4.79v51.14c0,3.3-0.5,3.69-1.93,4.79h15.27c9.53,0,24.58-1.04,24.58-16.9 C356.15,479.79,347.62,475.42,342.46,475.42z M331.57,502.57h-6.16l0.02-28.22l-0.02-21.5h6.16c6.52,0,14.12,0.24,14.12,9.42 c-0.29,7.3-2.83,12.5-13.86,12.5c0,0-2.8,1.67,0,1.67c9.03,0,17.16,4.06,17.16,14.42C348.98,501.53,339.74,502.57,331.57,502.57z" /> <path fill="#1A1916" d="M387.53,446.46c-16.87,0-27.91,15.13-27.91,31.66s11.59,31.16,27.68,31.16c16.95,0,27.6-15.62,27.6-31.16 C414.9,461.34,403.71,446.46,387.53,446.46z M387.38,503.08c-12.44,0-19.98-12.56-19.98-25.13c0-13.14,7.7-25.29,20.06-25.29 c11.51,0,19.67,11.66,19.67,25.29C407.13,490.19,399.82,503.08,387.38,503.08z"/> <path fill="#1A1916" d="M495.44,474.58c-3.73,0-3.87-0.71-4.73-1.81v9.11c0.72-0.94,0.72-1.81,4.52-1.81l6.72-0.04v0.01v20.35 c-3.56,1.76-7.05,2.6-10.78,2.6c-13.02,0-20.9-11.24-20.9-25.07c0-15.01,9.04-26.08,21.39-26.08c10.12,0,15.92,8.47,16.67,9.22 v-11.82c-0.75,0.59-1.16,0.92-1.91,0.92c-2.57,0-6.22-4.61-15.92-4.61c-16.09,0-28.52,13.5-28.52,32.54 c0,18.78,11.36,31.2,28.52,31.2c6.88,0,14.68-2.52,19.74-5.87v-28.87L495.44,474.58z"/> </g> </svg></div>
-      <div>
-        <div class="header-title">InnoTrans 2026</div>
-        <div class="header-sub">Meeting Scheduler · Messe Berlin · 22–25 Sep</div>
-      </div>
+      <div class="header-divider"></div>
+      <div class="header-app-label">Meeting Scheduler</div>
     </div>
     <div class="header-user">
       <span class="notion-pill"><i class="ti ti-brand-notion" style="font-size:13px;"></i> Synced with Notion</span>
@@ -283,6 +285,7 @@
 </header>
 
 <main>
+  <div class="event-line"><strong>Event:</strong> InnoTrans 2026 · Messe Berlin · 22–25 Sep</div>
   <div class="tabs">
     <button class="tab active" onclick="switchTab('book',event)"><i class="ti ti-calendar-plus"></i> Book a meeting</button>
     <button class="tab" onclick="switchTab('calendar',event)"><i class="ti ti-layout-grid"></i> Calendar</button>
