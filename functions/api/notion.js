@@ -130,7 +130,10 @@ export async function onRequest(context) {
     if (payload.action === 'register') {
       const { email, password, name, role, adminSecret } = payload;
       if (!email || !password || !name) return json({ error: 'Name, email and password required' }, 400, headers);
-      if (!env.ADMIN_SECRET || adminSecret !== env.ADMIN_SECRET) return json({ error: 'Invalid admin secret' }, 403, headers);
+      const session = await getSession(request, env);
+      const isManager = session && session.role === 'manager';
+      const secretOk = env.ADMIN_SECRET && adminSecret === env.ADMIN_SECRET;
+      if (!isManager && !secretOk) return json({ error: 'Manager access required' }, 403, headers);
       const existing = await env.USERS.get('user:' + email.toLowerCase());
       if (existing) return json({ error: 'User already exists' }, 409, headers);
       const passwordHash = await hashPassword(password);
@@ -140,6 +143,34 @@ export async function onRequest(context) {
         passwordHash, createdAt: new Date().toISOString(),
         lastLoginAt: null
       }));
+      return json({ success: true }, 200, headers);
+    }
+
+    if (payload.action === 'list-users') {
+      const session = await getSession(request, env);
+      if (!session) return json({ error: 'Unauthorised' }, 401, headers);
+      if (session.role !== 'manager') return json({ error: 'Manager access required' }, 403, headers);
+      const list = await env.USERS.list({ prefix: 'user:' });
+      const users = await Promise.all(list.keys.map(k => env.USERS.get(k.name, { type: 'json' })));
+      const safe = users.filter(Boolean).map(u => ({
+        name: u.name, email: u.email, role: u.role,
+        createdAt: u.createdAt, lastLoginAt: u.lastLoginAt || null
+      }));
+      safe.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+      return json(safe, 200, headers);
+    }
+
+    if (payload.action === 'admin-reset-password') {
+      const session = await getSession(request, env);
+      if (!session) return json({ error: 'Unauthorised' }, 401, headers);
+      if (session.role !== 'manager') return json({ error: 'Manager access required' }, 403, headers);
+      const { email, newPassword } = payload;
+      if (!email || !newPassword) return json({ error: 'Email and new password required' }, 400, headers);
+      if (newPassword.length < 10) return json({ error: 'Password must be at least 10 characters' }, 400, headers);
+      const user = await env.USERS.get('user:' + email.toLowerCase(), { type: 'json' });
+      if (!user) return json({ error: 'User not found' }, 404, headers);
+      const passwordHash = await hashPassword(newPassword);
+      await env.USERS.put('user:' + email.toLowerCase(), JSON.stringify({ ...user, passwordHash }));
       return json({ success: true }, 200, headers);
     }
 
