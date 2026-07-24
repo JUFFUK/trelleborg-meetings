@@ -52,6 +52,13 @@
     .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-secondary); }
     .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
     .field { margin-bottom: 1rem; }
+    .field-row { display: flex; gap: 12px; }
+    .field-row .field { flex: 1; }
+    .admin-user-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 0.5px solid var(--border-light); gap: 12px; }
+    .admin-user-row:last-child { border-bottom: none; }
+    .admin-user-name { font-size: 13px; font-weight: 500; }
+    .admin-user-meta { font-size: 12px; color: var(--text-tertiary); margin-top: 2px; }
+    .admin-user-actions { display: flex; gap: 8px; flex-shrink: 0; }
     .field label { display: block; font-size: 12px; font-weight: 500; color: var(--text-secondary); margin-bottom: 5px; }
     .field input, .field select, .field textarea { width: 100%; padding: 8px 10px; border: 0.5px solid var(--border); border-radius: var(--radius-md); font-size: 13px; font-family: var(--font-sans); color: var(--text-primary); background: var(--bg); outline: none; }
     .field input:focus, .field select:focus, .field textarea:focus { border-color: #1a1a18; }
@@ -260,6 +267,7 @@
     <button class="tab" onclick="switchTab('list',event)"><i class="ti ti-list"></i> All bookings</button>
     <button class="tab" onclick="switchTab('team',event)"><i class="ti ti-users"></i> Rail team</button>
     <button class="tab" onclick="switchTab('availability',event)"><i class="ti ti-calendar-off"></i> My availability</button>
+    <button class="tab" id="admin-tab-btn" style="display:none;" onclick="switchTab('admin',event)"><i class="ti ti-shield-lock"></i> Admin</button>
   </div>
 
   <!-- BOOK -->
@@ -425,6 +433,30 @@
       <div id="avail-list"><p style="color:var(--text-tertiary);font-size:13px;">Select your name above.</p></div>
     </div>
   </div>
+
+  <!-- ADMIN -->
+  <div id="view-admin" class="view">
+    <div id="admin-success-msg" class="success-msg"></div>
+    <div id="admin-error-msg" class="error-msg"></div>
+    <div class="card">
+      <p class="section-label">Add a team member account</p>
+      <div class="field-row">
+        <div class="field"><label>Name</label><input type="text" id="admin-new-name" placeholder="e.g. Jane Smith"></div>
+        <div class="field"><label>Email</label><input type="email" id="admin-new-email" placeholder="jane.smith@trelleborg.com"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Temporary password</label><input type="text" id="admin-new-password" placeholder="min. 10 characters"></div>
+        <div class="field"><label>Role</label>
+          <select id="admin-new-role"><option value="team">Team member</option><option value="manager">Manager (admin access)</option></select>
+        </div>
+      </div>
+      <button class="btn-primary" onclick="adminCreateUser()"><i class="ti ti-user-plus"></i> Create account</button>
+    </div>
+    <div class="card">
+      <p class="section-label">Existing accounts</p>
+      <div id="admin-users-list"><p style="color:var(--text-tertiary);font-size:13px;">Loading…</p></div>
+    </div>
+  </div>
 </main>
 </div>
 
@@ -560,6 +592,68 @@ async function doLogout() {
   location.reload();
 }
 
+// ── ADMIN PANEL (manager only) ──────────────────────────────────────────
+function showAdminMsg(type, html) {
+  const el = document.getElementById('admin-'+type+'-msg');
+  if (!el) return;
+  el.style.display = 'block'; el.innerHTML = html;
+  setTimeout(() => el.style.display = 'none', 6000);
+}
+
+async function renderAdminUsers() {
+  const listEl = document.getElementById('admin-users-list');
+  listEl.innerHTML = '<p style="color:var(--text-tertiary);font-size:13px;">Loading…</p>';
+  try {
+    const users = await authCall('list-users', {});
+    if (!users.length) { listEl.innerHTML = '<p style="color:var(--text-tertiary);font-size:13px;">No accounts yet.</p>'; return; }
+    listEl.innerHTML = users.map(u => `
+      <div class="admin-user-row">
+        <div>
+          <div class="admin-user-name">${u.name} <span style="color:var(--text-tertiary);font-weight:400;">· ${u.email}</span></div>
+          <div class="admin-user-meta">${u.role === 'manager' ? 'Manager' : 'Team member'} · last signed in ${u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleString() : 'never'}</div>
+        </div>
+        <div class="admin-user-actions">
+          <button class="btn-outline" onclick="adminResetPassword('${u.email.replace(/'/g,"\\'")}')"><i class="ti ti-key"></i> Reset password</button>
+        </div>
+      </div>
+    `).join('');
+  } catch (e) {
+    listEl.innerHTML = '';
+    showAdminMsg('error', `<i class="ti ti-alert-circle"></i> ${e.message}`);
+  }
+}
+
+async function adminCreateUser() {
+  const name = document.getElementById('admin-new-name').value.trim();
+  const email = document.getElementById('admin-new-email').value.trim();
+  const password = document.getElementById('admin-new-password').value;
+  const role = document.getElementById('admin-new-role').value;
+  if (!name || !email || !password) { showAdminMsg('error', '<i class="ti ti-alert-circle"></i> Name, email and a temporary password are required.'); return; }
+  if (password.length < 10) { showAdminMsg('error', '<i class="ti ti-alert-circle"></i> Password must be at least 10 characters.'); return; }
+  try {
+    await authCall('register', {name, email, password, role});
+    document.getElementById('admin-new-name').value = '';
+    document.getElementById('admin-new-email').value = '';
+    document.getElementById('admin-new-password').value = '';
+    showAdminMsg('success', `<i class="ti ti-check"></i> Account created for ${name}.`);
+    renderAdminUsers();
+  } catch (e) {
+    showAdminMsg('error', `<i class="ti ti-alert-circle"></i> ${e.message}`);
+  }
+}
+
+async function adminResetPassword(email) {
+  const newPassword = prompt(`New temporary password for ${email} (min. 10 characters):`);
+  if (!newPassword) return;
+  if (newPassword.length < 10) { showAdminMsg('error', '<i class="ti ti-alert-circle"></i> Password must be at least 10 characters.'); return; }
+  try {
+    await authCall('admin-reset-password', {email, newPassword});
+    showAdminMsg('success', `<i class="ti ti-check"></i> Password reset for ${email}. Tell them their new temporary password, and to keep it safe.`);
+  } catch (e) {
+    showAdminMsg('error', `<i class="ti ti-alert-circle"></i> ${e.message}`);
+  }
+}
+
 async function checkSessionAndInit() {
   const session = getSession();
   if (!session || !session.token) { showLogin(); return; }
@@ -582,6 +676,7 @@ async function showApp() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app-shell').style.display = 'block';
   document.getElementById('header-user-name').textContent = session ? session.name : '';
+  document.getElementById('admin-tab-btn').style.display = (session && session.role === 'manager') ? 'inline-flex' : 'none';
   renderProductAreaPills('f');
   renderProductAreaPills('edit');
   renderHostPills();
@@ -1192,6 +1287,7 @@ function switchTab(name,e){
   if(name==='team')         renderTeam();
   if(name==='calendar')     renderCalendar();
   if(name==='availability') renderAvailList();
+  if(name==='admin')        renderAdminUsers();
 }
 
 // ── EXPORT CSV ────────────────────────────────────────────────────────────
