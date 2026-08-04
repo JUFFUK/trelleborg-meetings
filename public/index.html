@@ -53,6 +53,7 @@
     .space-pill:hover:not(:disabled) { border-color: #aaa; }
     .space-pill.selected-private { background: #E6F1FB; border-color: #85B7EB; color: #0C447C; font-weight: 500; }
     .space-pill.selected-informal { background: #E1F5EE; border-color: #5DCAA5; color: #085041; font-weight: 500; }
+    .space-pill.selected-external { background: #EEEDFE; border-color: #AFA9EC; color: #3C3489; font-weight: 500; }
     .space-pill.disabled { opacity: .4; cursor: not-allowed; }
     .space-legend { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 10px; }
     .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-secondary); }
@@ -85,7 +86,7 @@
     .btn-outline:hover { background: var(--bg-secondary); color: var(--text-primary); }
     .success-msg { display: none; padding: 10px 14px; background: #E1F5EE; border: 0.5px solid #5DCAA5; border-radius: var(--radius-md); color: #085041; font-size: 13px; margin-bottom: 1rem; }
     .error-msg   { display: none; padding: 10px 14px; background: #FDECEA; border: 0.5px solid #E57373; border-radius: var(--radius-md); color: #B71C1C; font-size: 13px; margin-bottom: 1rem; }
-    .stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 1rem; }
+    .stats { display: grid; grid-template-columns: repeat(5,1fr); gap: 10px; margin-bottom: 1rem; }
     .stat { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: .9rem 1rem; box-shadow: var(--shadow); }
     .stat-label { font-size: 11px; color: var(--text-tertiary); margin-bottom: 4px; }
     .stat-val { font-size: 22px; font-weight: 600; }
@@ -97,6 +98,7 @@
     .booking-row:last-child { border-bottom: none; }
     .booking-avatar { width: 36px; height: 36px; border-radius: 50%; background: #E6F1FB; color: #0C447C; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; flex-shrink: 0; }
     .booking-avatar.informal { background: #E1F5EE; color: #085041; }
+    .booking-avatar.external { background: #EEEDFE; color: #3C3489; }
     .booking-meta { flex: 1; min-width: 0; }
     .booking-name { font-size: 14px; font-weight: 500; margin-bottom: 3px; }
     .booking-detail { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
@@ -208,6 +210,7 @@
       <select id="edit-space">
         <option>Private room A</option><option>Private room B</option>
         <option>Informal space 1</option><option>Informal space 2</option><option>Informal space 3</option>
+        <option>External</option>
       </select>
     </div>
     <div class="field">
@@ -311,6 +314,7 @@
       <div class="space-legend">
         <span class="legend-item"><span class="legend-dot" style="background:#85B7EB;"></span> Private available</span>
         <span class="legend-item"><span class="legend-dot" style="background:#5DCAA5;"></span> Informal available</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#AFA9EC;"></span> External (always available)</span>
         <span class="legend-item"><span class="legend-dot" style="background:#EF9F27;"></span> Partially booked</span>
         <span class="legend-item"><span class="legend-dot" style="background:#d0cfcb;"></span> Fully booked</span>
       </div>
@@ -377,6 +381,7 @@
         <button class="cal-space-tab" onclick="selectCalSpace(this,'Informal space 1')">Informal 1</button>
         <button class="cal-space-tab" onclick="selectCalSpace(this,'Informal space 2')">Informal 2</button>
         <button class="cal-space-tab" onclick="selectCalSpace(this,'Informal space 3')">Informal 3</button>
+        <button class="cal-space-tab" onclick="selectCalSpace(this,'External')">External</button>
       </div>
       <div class="cal-wrap"><table class="cal-table" id="cal-table"></table></div>
     </div>
@@ -388,6 +393,7 @@
       <div class="stat"><div class="stat-label">Total booked</div><div class="stat-val" id="stat-total">0</div></div>
       <div class="stat"><div class="stat-label">Private rooms</div><div class="stat-val" id="stat-private">0</div></div>
       <div class="stat"><div class="stat-label">Informal spaces</div><div class="stat-val" id="stat-informal">0</div></div>
+      <div class="stat"><div class="stat-label">External meetings</div><div class="stat-val" id="stat-external">0</div></div>
       <div class="stat"><div class="stat-label">Total attendees</div><div class="stat-val" id="stat-attendees">0</div></div>
     </div>
     <div class="filter-row">
@@ -399,6 +405,7 @@
       <select id="filter-space-type" onchange="renderList()">
         <option value="">All spaces</option>
         <option value="private">Private rooms</option><option value="informal">Informal spaces</option>
+        <option value="external">External</option>
       </select>
       <select id="filter-host" onchange="renderList()"><option value="">All hosts</option></select>
       <select id="filter-topic" onchange="renderList()">
@@ -549,8 +556,8 @@ const RC = {
 };
 
 const DAYS      = ['Tue 22 Sep','Wed 23 Sep','Thu 24 Sep','Fri 25 Sep'];
-const SPACES    = {private:['Private room A','Private room B'],informal:['Informal space 1','Informal space 2','Informal space 3']};
-const ALL_SPACES= [...SPACES.private,...SPACES.informal];
+const SPACES    = {private:['Private room A','Private room B'],informal:['Informal space 1','Informal space 2','Informal space 3'],external:['External']};
+const ALL_SPACES= [...SPACES.private,...SPACES.informal,...SPACES.external];
 const ALL_TIMES = ['09:00','09:30','10:00','10:30','11:00','11:30','12:00','12:30','13:00','13:30','14:00','14:30','15:00','15:30','16:00','16:30'];
 const FRI_TIMES = ALL_TIMES.filter(t=>t<='15:30');
 
@@ -558,7 +565,7 @@ function getTimesForDay(d){ return d==='Fri 25 Sep'?FRI_TIMES:ALL_TIMES; }
 function fullName(m){ return m.last?`${m.first} ${m.last}`:m.first; }
 function initials(m){ return m.last?(m.first[0]+m.last[0]).toUpperCase():m.first.slice(0,2).toUpperCase(); }
 function roleLabel(r){ return r==='ID'?'I & D':r==='Internal'?'Internal sales':r; }
-function spaceType(s){ return SPACES.private.includes(s)?'private':'informal'; }
+function spaceType(s){ return SPACES.private.includes(s)?'private':SPACES.informal.includes(s)?'informal':'external'; }
 function getInitialsStr(n){ const p=n.trim().split(' '); return p.length>1?(p[0][0]+p[p.length-1][0]).toUpperCase():n.slice(0,2).toUpperCase(); }
 function richText(str){ return [{type:'text', text:{content: String(str==null?'':str)}}]; }
 
@@ -920,7 +927,7 @@ async function deleteAvailability(pageId) {
 
 // ── HELPERS ───────────────────────────────────────────────────────────────
 function getBookingsAt(day,time){ return bookings.filter(b=>b.day===day&&b.time===time); }
-function isFree(day,time,space){ return !bookings.some(b=>b.day===day&&b.time===time&&b.space===space); }
+function isFree(day,time,space){ return spaceType(space)==='external'?true:!bookings.some(b=>b.day===day&&b.time===time&&b.space===space); }
 function timesOverlap(slotTime,startTime,endTime){
   if(!startTime||!endTime) return false;
   const toMin=t=>{const[h,m]=t.split(':').map(Number);return h*60+m;};
@@ -1062,13 +1069,12 @@ function renderSlots(){
     const bkgs=getBookingsAt(currentDay,t), taken=bkgs.map(b=>b.space);
     const freeP=SPACES.private.filter(s=>!taken.includes(s)).length;
     const freeI=SPACES.informal.filter(s=>!taken.includes(s)).length;
-    const total=freeP+freeI, isSel=selectedSlot===t;
+    const total=freeP+freeI+1, isSel=selectedSlot===t; // +1: External is unlimited, so a slot is never fully booked
     let cls='slot';
-    if(total===0) cls+=' fully-taken'; else if(bkgs.length>0) cls+=' partial';
-    if(isSel&&total>0) cls+=' selected';
-    const avail=total===0?'<div class="slot-avail">Full</div>'
-      :`<div class="slot-avail">${[freeP>0?freeP+'P':'',freeI>0?freeI+'I':''].filter(Boolean).join(' · ')}</div>`;
-    return `<button class="${cls}" onclick="selectSlot('${t}')" ${total===0?'disabled':''}>${t}${avail}</button>`;
+    if(bkgs.length>0) cls+=' partial';
+    if(isSel) cls+=' selected';
+    const avail=`<div class="slot-avail">${[freeP>0?freeP+'P':'',freeI>0?freeI+'I':'','E'].filter(Boolean).join(' · ')}</div>`;
+    return `<button class="${cls}" onclick="selectSlot('${t}')">${t}${avail}</button>`;
   }).join('');
 }
 
@@ -1078,8 +1084,8 @@ function renderSpacePills(){
   card.style.display='block';
   pills.innerHTML=ALL_SPACES.map(s=>{
     const free=isFree(currentDay,selectedSlot,s), type=spaceType(s);
-    const sel=selectedSpace===s?(type==='private'?' selected-private':' selected-informal'):'';
-    const icon=type==='private'?'ti-lock':'ti-armchair';
+    const sel=selectedSpace===s?(type==='private'?' selected-private':type==='informal'?' selected-informal':' selected-external'):'';
+    const icon=type==='private'?'ti-lock':type==='informal'?'ti-armchair':'ti-map-pin';
     return `<button class="space-pill${sel}${!free?' disabled':''}" onclick="selectSpace('${s}')" ${!free?'disabled':''}>
       <i class="ti ${icon}" style="font-size:14px;vertical-align:-1px;margin-right:4px;"></i>${s}</button>`;
   }).join('');
@@ -1113,7 +1119,10 @@ function populateHostFilter(){
 // ── RENDER: CALENDAR ──────────────────────────────────────────────────────
 function renderCalendar(){
   const tbl=document.getElementById('cal-table');
-  const spaces=calSpace==='all'?ALL_SPACES:[calSpace], total=spaces.length;
+  const spaces=calSpace==='all'?ALL_SPACES:[calSpace];
+  // External has unlimited capacity, so it's excluded from the free/full occupancy count below;
+  // its bookings still show as names in the cell.
+  const constrained=spaces.filter(s=>spaceType(s)!=='external'), total=constrained.length;
   let html='<thead><tr><th class="time-col">Time</th>';
   DAYS.forEach(d=>html+=`<th>${d}</th>`);
   html+='</tr></thead><tbody>';
@@ -1123,9 +1132,11 @@ function renderCalendar(){
       const isFri=day==='Fri 25 Sep';
       if(isFri&&!FRI_TIMES.includes(t)){html+=`<td><div class="cal-cell empty-day" style="font-size:10px;text-align:center;padding-top:10px;color:#aaa;">—</div></td>`;return;}
       const bkgsHere=bookings.filter(b=>b.day===day&&b.time===t&&spaces.includes(b.space));
-      const takenSp=bkgsHere.map(b=>b.space), freeCount=spaces.filter(s=>!takenSp.includes(s)).length;
+      const takenConstrained=bkgsHere.filter(b=>spaceType(b.space)!=='external').map(b=>b.space);
+      const freeCount=constrained.filter(s=>!takenConstrained.includes(s)).length;
       let cls='cal-cell', label='';
-      if(freeCount===total){cls+=' free-all';label=total===1?'Available':`${freeCount} of ${total} free`;}
+      if(total===0){cls+=' free-all';label='Unlimited';}
+      else if(freeCount===total){cls+=' free-all';label=total===1?'Available':`${freeCount} of ${total} free`;}
       else if(freeCount===0){cls+=' full';label='Fully booked';}
       else{cls+=' partial';label=`${freeCount} of ${total} free`;}
       const names=bkgsHere.map(b=>`<div class="cal-booking">${b.visitorName||b.name||''}${calSpace==='all'?' · '+b.space.replace('Private room','Priv').replace('Informal space','Inf'):''}</div>`).join('');
@@ -1231,7 +1242,7 @@ function renderList(){
   if(!filtered.length){list.innerHTML='';empty.style.display='block';return;}
   empty.style.display='none';
   list.innerHTML=filtered.map(b=>{
-    const isPriv=b.spaceType==='private', visName=b.visitorName||b.name||'—';
+    const isPriv=b.spaceType==='private', isExt=b.spaceType==='external', visName=b.visitorName||b.name||'—';
     const hostsArr=Array.isArray(b.hosts)?b.hosts:(b.railTeam||'').split(',').map(h=>h.trim()).filter(Boolean);
     const hostTags=hostsArr.map(h=>{
       const m=TEAM.find(x=>fullName(x)===h.trim()),rc=m?(RC[m.role]||RC.Other):RC.Other;
@@ -1239,13 +1250,13 @@ function renderList(){
     }).join('');
     const attLabel=b.attendees&&b.attendees!=='1'?`&nbsp;<i class="ti ti-users" style="font-size:11px;vertical-align:-1px;"></i> ${b.attendees}`:'';
     return `<div class="booking-row">
-      <div class="booking-avatar${isPriv?'':' informal'}">${getInitialsStr(visName)}</div>
+      <div class="booking-avatar${isPriv?'':isExt?' external':' informal'}">${getInitialsStr(visName)}</div>
       <div class="booking-meta">
         <div class="booking-name">${visName} <span style="font-weight:400;color:#888;font-size:13px;">· ${b.company||''}</span></div>
         <div class="booking-detail">
           <i class="ti ti-calendar" style="font-size:12px;vertical-align:-1px;"></i> ${b.day} &nbsp;
           <i class="ti ti-clock" style="font-size:12px;vertical-align:-1px;"></i> ${b.time} &nbsp;
-          <span class="badge ${isPriv?'badge-blue':'badge-teal'}">${b.space}</span>
+          <span class="badge ${isPriv?'badge-blue':isExt?'badge-purple':'badge-teal'}">${b.space}</span>
           ${attLabel}
           ${b.topic?`&nbsp;<span class="badge ${topicBadge(b.topic)}">${b.topic}</span>`:''}
           ${b.productArea?`&nbsp;<span class="badge ${productAreaBadge(b.productArea)}">${b.productArea}</span>`:''}
@@ -1287,6 +1298,7 @@ function updateStats(){
   document.getElementById('stat-total').textContent=bookings.length;
   document.getElementById('stat-private').textContent=bookings.filter(b=>b.spaceType==='private').length;
   document.getElementById('stat-informal').textContent=bookings.filter(b=>b.spaceType==='informal').length;
+  document.getElementById('stat-external').textContent=bookings.filter(b=>b.spaceType==='external').length;
   document.getElementById('stat-attendees').textContent=bookings.reduce((s,b)=>s+(parseInt(b.attendees)||1),0);
   renderTeam();
 }
