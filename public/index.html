@@ -205,6 +205,7 @@
     <div class="modal-info" id="edit-slot-info">—</div>
     <div class="field"><label>Visitor name *</label><input type="text" id="edit-name"></div>
     <div class="field"><label>Company *</label><input type="text" id="edit-company"></div>
+    <div class="field"><label>Customer email <span style="color:var(--text-tertiary);font-weight:400;">(optional, for the automatic pre-show reminder)</span></label><input type="email" id="edit-customer-email" placeholder="jane.smith@customer.com"></div>
     <div class="field">
       <label>Space</label>
       <select id="edit-space">
@@ -327,6 +328,7 @@
     <div class="card">
         <div class="field"><label>Visitor name *</label><input type="text" id="f-name" placeholder="e.g. Jane Smith"></div>
         <div class="field"><label>Company *</label><input type="text" id="f-company" placeholder="e.g. Acme Corp"></div>
+        <div class="field"><label>Customer email <span style="color:var(--text-tertiary);font-weight:400;">(optional — sends an automatic reminder the day before the show)</span></label><input type="email" id="f-customer-email" placeholder="jane.smith@customer.com"></div>
       <div class="field">
         <label>Topic</label>
         <select id="f-topic">
@@ -506,43 +508,55 @@ const PA_COLORS = {
 };
 
 const TEAM = [
-  {first:'Arsalan',      last:'Bagheri',      role:'Sales',       productArea:'Antivibration Solutions'},
-  {first:'Elion',        last:'Pogaj',         role:'Sales',       productArea:'Antivibration Solutions'},
-  {first:'Jörg',         last:'Spreckels',     role:'Engineering', productArea:'Antivibration Solutions'},
-  {first:'Kim',          last:'Lindholm',      role:'Sales',       productArea:'Antivibration Solutions'},
-  {first:'Stefan',       last:'Hülsiggensen',  role:'Sales',       productArea:'Antivibration Solutions'},
-  {first:'Patrick',      last:'Zenker',        role:'Engineering', productArea:'Antivibration Solutions'},
-  {first:'Rüdiger',      last:'Hack',          role:'Engineering', productArea:'Antivibration Solutions'},
-  {first:'Sascha',       last:'Ungewiss',      role:'Sales',       productArea:'Antivibration Solutions'},
-  {first:'Tobias',       last:'Denner',        role:'Sales',       productArea:'Antivibration Solutions'},
-  {first:'Jim',          last:'Weaver',        role:'Sales',       productArea:'Antivibration Solutions'},
-  {first:'Ulf',          last:'Klaua',         role:'Sales',       productArea:'Antivibration Solutions'},
-  {first:'Corinna',      last:'Gall',          role:'Internal',    productArea:'Antivibration Solutions'},
-  {first:'Claudia',      last:'Lutz',          role:'Sales',       productArea:'Antivibration Solutions'},
-  {first:'Philipp',      last:'Mueller',       role:'Sales',       productArea:'Antivibration Solutions'},
-  {first:'Conrad',       last:'Hextall',       role:'Engineering', productArea:'Antivibration Solutions'},
-  {first:'Samuele',      last:'Vona',          role:'Sales',       productArea:'Antivibration Solutions'},
-  {first:'Antoine',      last:'Charrier',      role:'Sales',       productArea:'Antivibration Solutions'},
-  {first:'Jean-François',last:'Mabile',        role:'GM',          productArea:'Antivibration Solutions'},
-  {first:'Ranadip',      last:'Basu',          role:'Sales',       productArea:'Antivibration Solutions'},
-  {first:'Mallikarjun',  last:'Uppu',          role:'Engineering', productArea:'Antivibration Solutions'},
-  {first:'Sudeep',       last:'Mukherjee',     role:'Sales',       productArea:'Antivibration Solutions'},
-  {first:'Nathan',       last:'Lipkewycz',     role:'Sales',       productArea:'Antivibration Solutions'},
-  {first:'Dummy',last:'Sealing1',role:'Sales',productArea:'Sealing Solutions'},
-  {first:'Dummy',last:'Sealing2',role:'Sales',productArea:'Sealing Solutions'},
-  {first:'Dummy',last:'Sealing3',role:'Engineering',productArea:'Sealing Solutions'},
-  {first:'Dummy',last:'Sealing4',role:'Engineering',productArea:'Sealing Solutions'},
-  {first:'Dummy',last:'Sealing5',role:'GM',productArea:'Sealing Solutions'},
+  // ── Antivibration Solutions (AVS) ─────────────────────────────────────
+  {first:'Andreas',    last:'Wolf',          role:'Engineering', productArea:'Antivibration Solutions'},
+  {first:'Arsalan',    last:'Bagheri',       role:'Sales',       productArea:'Antivibration Solutions'},
+  {first:'Backup 1',   last:'',              role:'Sales',       productArea:'Antivibration Solutions'},
+  {first:'Backup 2',   last:'',              role:'Sales',       productArea:'Antivibration Solutions'},
+  {first:'Christoph',  last:'Zuppiger',      role:'Engineering', productArea:'Antivibration Solutions'},
+  {first:'Claudia',    last:'Lutz',          role:'Sales',       productArea:'Antivibration Solutions'},
+  {first:'Conrad',     last:'Hextall',       role:'Engineering', productArea:'Antivibration Solutions'},
+  {first:'Corinna',    last:'Gall',          role:'Internal',    productArea:'Antivibration Solutions'},
+  {first:'Elion',      last:'Pogaj',         role:'Sales',       productArea:'Antivibration Solutions'},
+  {first:'Eric',       last:'Wolf',          role:'Other',       productArea:'Antivibration Solutions'}, // role was "Barista", double-check this is intended
+  {first:'Nina',       last:'Heinrich',      role:'Engineering', productArea:'Antivibration Solutions'},
+  {first:'Jim',        last:'Weaver',        role:'Sales',       productArea:'Antivibration Solutions'},
+  {first:'Jörg',       last:'Spreckels',     role:'Engineering', productArea:'Antivibration Solutions'},
+  {first:'Julien',     last:'Ley',           role:'Sales',       productArea:'Antivibration Solutions'},
+  {first:'KAM 4',      last:'',              role:'Sales',       productArea:'Antivibration Solutions'},
+  {first:'Kim',        last:'Lindholm',      role:'Sales',       productArea:'Antivibration Solutions'},
+  {first:'Mallikarjun',last:'Uppu',          role:'Engineering', productArea:'Antivibration Solutions'},
+  {first:'Nathan',     last:'Lipkewycz',     role:'Sales',       productArea:'Antivibration Solutions'},
+  {first:'Patrick',    last:'Zenker',        role:'ID',          productArea:'Antivibration Solutions'}, // was "Engineering", updated to I & D per latest roster
+  {first:'Philipp',    last:'Müller',        role:'Sales',       productArea:'Antivibration Solutions'}, // spelling corrected from "Mueller"
+  {first:'Philipp',    last:'Gerstenberg',   role:'Other',       productArea:'Antivibration Solutions'}, // role was "Purchasing", no dedicated colour yet
+  {first:'Ranadip',    last:'Basu',          role:'Sales',       productArea:'Antivibration Solutions'},
+  {first:'Rüdiger',    last:'Hack',          role:'Engineering', productArea:'Antivibration Solutions'},
+  {first:'Samuele',    last:'Vona',          role:'Sales',       productArea:'Antivibration Solutions'},
+  {first:'Sascha',     last:'Ungewiss',      role:'Sales',       productArea:'Antivibration Solutions'},
+  {first:'Sebastian',  last:'Utiger',        role:'Sales',       productArea:'Antivibration Solutions'},
+  {first:'Stefan',     last:'Hülsiggensen',  role:'Sales',       productArea:'Antivibration Solutions'}, // spelling of first name unconfirmed, flagged "Stefan ?" on the roster
+  {first:'Sudeep',     last:'Mukherjee',     role:'Sales',       productArea:'Antivibration Solutions'},
+  {first:'Tobias',     last:'Denner',        role:'Sales',       productArea:'Antivibration Solutions'},
+  {first:'Tom',        last:'Wharton',       role:'Other',       productArea:'Antivibration Solutions'}, // role was "Purchasing", no dedicated colour yet
+  {first:'Ulf',        last:'Klaua',         role:'Sales',       productArea:'Antivibration Solutions'},
+  {first:'Xuebing',    last:'Li',            role:'Engineering', productArea:'Antivibration Solutions'},
+  // ── Sealing Solutions (TSS) ────────────────────────────────────────────
+  {first:'Antoine',    last:'Charrier',      role:'Sales', productArea:'Sealing Solutions'},
+  {first:'Jean-François',last:'Mabile',      role:'Sales', productArea:'Sealing Solutions'}, // role corrected from GM to Sales
+  {first:'Filippo',    last:'Setteceli',     role:'Sales', productArea:'Sealing Solutions'},
+  // ── Engineered Coated Fabrics (ECF) ────────────────────────────────────
+  {first:'Jenifer',    last:'Confessore',    role:'Other', productArea:'Engineered Coated Fabrics'}, // role listed as "ECF" on the roster, please confirm actual role
+  {first:'Nicolas',    last:'Wiber',         role:'Sales', productArea:'Engineered Coated Fabrics'},
+  {first:'Rahul',      last:'Kumar',         role:'Other', productArea:'Engineered Coated Fabrics'}, // role listed as "ECF" on the roster, please confirm actual role
+  // ── Fluid Handling: no real names supplied yet, placeholders kept ──────
   {first:'Dummy',last:'Fluid1',role:'Sales',productArea:'Fluid Handling'},
   {first:'Dummy',last:'Fluid2',role:'Sales',productArea:'Fluid Handling'},
   {first:'Dummy',last:'Fluid3',role:'Engineering',productArea:'Fluid Handling'},
   {first:'Dummy',last:'Fluid4',role:'Engineering',productArea:'Fluid Handling'},
   {first:'Dummy',last:'Fluid5',role:'GM',productArea:'Fluid Handling'},
-  {first:'Dummy',last:'Fabrics1',role:'Sales',productArea:'Engineered Coated Fabrics'},
-  {first:'Dummy',last:'Fabrics2',role:'Sales',productArea:'Engineered Coated Fabrics'},
-  {first:'Dummy',last:'Fabrics3',role:'Engineering',productArea:'Engineered Coated Fabrics'},
-  {first:'Dummy',last:'Fabrics4',role:'Engineering',productArea:'Engineered Coated Fabrics'},
-  {first:'Dummy',last:'Fabrics5',role:'GM',productArea:'Engineered Coated Fabrics'}
+  // ── Not tied to a product area, so won't appear in the booking form's host list ──
+  {first:'Peter', last:'Hardy', role:'Sales', productArea:'TIS'}
 ];
 const REAL_TEAM = TEAM.filter(m => m.productArea==='Antivibration Solutions');
 
@@ -812,6 +826,8 @@ async function loadBookings() {
         if(prop.type==='rich_text') return prop.rich_text.map(t=>t.plain_text).join('')||fb;
         if(prop.type==='select')    return prop.select?.name||fb;
         if(prop.type==='number')    return prop.number??fb;
+        if(prop.type==='email')     return prop.email||fb;
+        if(prop.type==='checkbox') return !!prop.checkbox;
         return fb;
       };
       return {
@@ -819,7 +835,8 @@ async function loadBookings() {
         company:g('Company'), day:g('Day'), time:g('Time'),
         space:g('Space'), spaceType:g('Space type'), topic:g('Topic'),
         productArea:g('Product area'), attendees:g('Attendees','1'),
-        railTeam:g('Rail team'), notes:g('Notes')
+        railTeam:g('Rail team'), notes:g('Notes'),
+        customerEmail:g('Customer email'), reminderSent:g('Reminder sent',false)
       };
     });
   } catch(e) {
@@ -875,7 +892,9 @@ async function saveToNotion(b) {
         'Product area':{select:{name:b.productArea||'Antivibration Solutions'}},
         'Attendees':   {rich_text:richText(String(b.attendees||1))},
         'Rail team':   {rich_text:richText(b.hosts.join(', '))},
-        'Notes':       {rich_text:richText(b.notes||'')}
+        'Notes':       {rich_text:richText(b.notes||'')},
+        'Customer email': {email:b.customerEmail?b.customerEmail:null},
+        'Reminder sent':  {checkbox:false}
       }
     });
     b.pageId=data.id; return true;
@@ -894,7 +913,9 @@ async function updateInNotion(pageId, u) {
       'Product area':{select:{name:u.productArea||'Antivibration Solutions'}},
       'Attendees':   {rich_text:richText(String(u.attendees||1))},
       'Rail team':   {rich_text:richText(u.hosts.join(', '))},
-      'Notes':       {rich_text:richText(u.notes||'')}
+      'Notes':       {rich_text:richText(u.notes||'')},
+      'Customer email': {email:u.customerEmail?u.customerEmail:null},
+      'Reminder sent':  {checkbox:false}
     }
   });
 }
@@ -1155,17 +1176,20 @@ async function bookMeeting(){
   const productArea=document.getElementById('f-product-area').value;
   const attendees=document.getElementById('f-attendees').value;
   const notes=document.getElementById('f-notes').value.trim();
+  const customerEmail=document.getElementById('f-customer-email').value.trim();
   if(!name){alert('Please enter a visitor name.');return;}
   if(!company){alert('Please enter a company.');return;}
+  if(customerEmail&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)){alert('Please enter a valid customer email, or leave it blank.');return;}
   if(!selectedSlot){alert('Please select a time slot.');return;}
   if(!selectedSpace){alert('Please select a meeting space.');return;}
   if(!isFree(currentDay,selectedSlot,selectedSpace)){showError('This space was just taken. Please choose another.');renderSlots();renderSpacePills();selectedSpace=null;return;}
-  const booking={name,company,day:currentDay,time:selectedSlot,space:selectedSpace,
+  const booking={name,company,customerEmail,day:currentDay,time:selectedSlot,space:selectedSpace,
     spaceType:spaceType(selectedSpace),topic,productArea,attendees,notes,hosts:[...selectedHosts]};
   const ok=await saveToNotion(booking);
   if(!ok){showError('Failed to save. Please try again.');return;}
   bookings.push({...booking,visitorName:name});
   document.getElementById('f-name').value=''; document.getElementById('f-company').value='';
+  document.getElementById('f-customer-email').value='';
   document.getElementById('f-topic').value=''; document.getElementById('f-product-area').value='';
   renderProductAreaPills('f');
   document.getElementById('f-attendees').value='1'; document.getElementById('f-notes').value='';
@@ -1187,6 +1211,7 @@ function openEdit(idx){
   const b=bookings[idx]; editingBooking={pageId:b.pageId,idx};
   document.getElementById('edit-name').value=b.visitorName||b.name||'';
   document.getElementById('edit-company').value=b.company||'';
+  document.getElementById('edit-customer-email').value=b.customerEmail||'';
   document.getElementById('edit-space').value=b.space||'Private room A';
   document.getElementById('edit-topic').value=b.topic||'';
   document.getElementById('edit-product-area').value=b.productArea||'';
@@ -1206,6 +1231,7 @@ async function saveEdit(){
   const{pageId,idx}=editingBooking;
   const name=document.getElementById('edit-name').value.trim();
   const company=document.getElementById('edit-company').value.trim();
+  const customerEmail=document.getElementById('edit-customer-email').value.trim();
   const space=document.getElementById('edit-space').value;
   const topic=document.getElementById('edit-topic').value;
   const productArea=document.getElementById('edit-product-area').value;
@@ -1213,12 +1239,13 @@ async function saveEdit(){
   const notes=document.getElementById('edit-notes').value.trim();
   if(!name){alert('Visitor name is required.');return;}
   if(!company){alert('Company is required.');return;}
+  if(customerEmail&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)){alert('Please enter a valid customer email, or leave it blank.');return;}
   const btn=document.getElementById('edit-save-btn');
   btn.disabled=true; btn.textContent='Saving…';
   try {
-    await updateInNotion(pageId,{name,company,space,topic,productArea,attendees,notes,hosts:[...editHosts]});
-    bookings[idx]={...bookings[idx],visitorName:name,name,company,space,spaceType:spaceType(space),
-      topic,productArea,attendees,notes,hosts:[...editHosts],railTeam:editHosts.join(', ')};
+    await updateInNotion(pageId,{name,company,customerEmail,space,topic,productArea,attendees,notes,hosts:[...editHosts]});
+    bookings[idx]={...bookings[idx],visitorName:name,name,company,customerEmail,space,spaceType:spaceType(space),
+      topic,productArea,attendees,notes,hosts:[...editHosts],railTeam:editHosts.join(', '),reminderSent:false};
     closeEdit(); renderList(); renderSlots(); updateStats();
     showMsg('success',`<i class="ti ti-circle-check"></i> Booking updated — <strong>${name}</strong>`);
   } catch(e){ console.error(e); showError('Could not update. Please try again.'); }
@@ -1262,6 +1289,7 @@ function renderList(){
           ${b.productArea?`&nbsp;<span class="badge ${productAreaBadge(b.productArea)}">${b.productArea}</span>`:''}
         </div>
         ${hostsArr.length?`<div class="booking-detail" style="margin-top:4px;"><i class="ti ti-users" style="font-size:12px;vertical-align:-1px;"></i> ${hostTags}</div>`:''}
+        ${b.customerEmail?`<div class="booking-detail" style="margin-top:2px;"><i class="ti ti-mail" style="font-size:12px;vertical-align:-1px;"></i> ${b.customerEmail}${b.reminderSent?' <span style="color:#5DCAA5;">· reminder sent</span>':' <span style="color:var(--text-tertiary);">· reminder pending</span>'}</div>`:''}
         ${b.notes?`<div class="booking-detail" style="margin-top:2px;font-style:italic;">"${b.notes}"</div>`:''}
       </div>
       <div class="row-actions">
@@ -1387,11 +1415,11 @@ function switchTab(name,e){
 // ── EXPORT CSV ────────────────────────────────────────────────────────────
 function exportCSV(){
   if(!bookings.length){alert('No bookings to export.');return;}
-  const headers=['Day','Time','Space','Space type','Visitor name','Company','Topic','Product area','Visiting attendees','Rail team','Notes'];
+  const headers=['Day','Time','Space','Space type','Visitor name','Company','Customer email','Reminder sent','Topic','Product area','Visiting attendees','Rail team','Notes'];
   const rows=bookings.map(b=>{
     const hosts=Array.isArray(b.hosts)?b.hosts.join('; '):(b.railTeam||'');
-    return [b.day,b.time,b.space,b.spaceType,b.visitorName||b.name,b.company,b.topic,b.productArea||'',b.attendees,hosts,b.notes]
-      .map(v=>`"${(v||'').replace(/"/g,'""')}"`);
+    return [b.day,b.time,b.space,b.spaceType,b.visitorName||b.name,b.company,b.customerEmail||'',b.reminderSent?'Yes':'No',b.topic,b.productArea||'',b.attendees,hosts,b.notes]
+      .map(v=>`"${String(v||'').replace(/"/g,'""')}"`);
   });
   const csv=[headers,...rows].map(r=>r.join(',')).join('\n');
   const blob=new Blob([csv],{type:'text/csv'});
