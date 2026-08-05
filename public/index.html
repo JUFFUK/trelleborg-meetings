@@ -205,7 +205,6 @@
     <div class="modal-info" id="edit-slot-info">—</div>
     <div class="field"><label>Visitor name *</label><input type="text" id="edit-name"></div>
     <div class="field"><label>Company *</label><input type="text" id="edit-company"></div>
-    <div class="field"><label>Customer email <span style="color:var(--text-tertiary);font-weight:400;">(optional, for the automatic pre-show reminder)</span></label><input type="email" id="edit-customer-email" placeholder="jane.smith@customer.com"></div>
     <div class="field">
       <label>Space</label>
       <select id="edit-space">
@@ -328,7 +327,6 @@
     <div class="card">
         <div class="field"><label>Visitor name *</label><input type="text" id="f-name" placeholder="e.g. Jane Smith"></div>
         <div class="field"><label>Company *</label><input type="text" id="f-company" placeholder="e.g. Acme Corp"></div>
-        <div class="field"><label>Customer email <span style="color:var(--text-tertiary);font-weight:400;">(optional — sends an automatic reminder the day before the show)</span></label><input type="email" id="f-customer-email" placeholder="jane.smith@customer.com"></div>
       <div class="field">
         <label>Topic</label>
         <select id="f-topic">
@@ -826,8 +824,6 @@ async function loadBookings() {
         if(prop.type==='rich_text') return prop.rich_text.map(t=>t.plain_text).join('')||fb;
         if(prop.type==='select')    return prop.select?.name||fb;
         if(prop.type==='number')    return prop.number??fb;
-        if(prop.type==='email')     return prop.email||fb;
-        if(prop.type==='checkbox') return !!prop.checkbox;
         return fb;
       };
       return {
@@ -835,8 +831,7 @@ async function loadBookings() {
         company:g('Company'), day:g('Day'), time:g('Time'),
         space:g('Space'), spaceType:g('Space type'), topic:g('Topic'),
         productArea:g('Product area'), attendees:g('Attendees','1'),
-        railTeam:g('Rail team'), notes:g('Notes'),
-        customerEmail:g('Customer email'), reminderSent:g('Reminder sent',false)
+        railTeam:g('Rail team'), notes:g('Notes')
       };
     });
   } catch(e) {
@@ -892,9 +887,7 @@ async function saveToNotion(b) {
         'Product area':{select:{name:b.productArea||'Antivibration Solutions'}},
         'Attendees':   {rich_text:richText(String(b.attendees||1))},
         'Rail team':   {rich_text:richText(b.hosts.join(', '))},
-        'Notes':       {rich_text:richText(b.notes||'')},
-        'Customer email': {email:b.customerEmail?b.customerEmail:null},
-        'Reminder sent':  {checkbox:false}
+        'Notes':       {rich_text:richText(b.notes||'')}
       }
     });
     b.pageId=data.id; return true;
@@ -913,9 +906,7 @@ async function updateInNotion(pageId, u) {
       'Product area':{select:{name:u.productArea||'Antivibration Solutions'}},
       'Attendees':   {rich_text:richText(String(u.attendees||1))},
       'Rail team':   {rich_text:richText(u.hosts.join(', '))},
-      'Notes':       {rich_text:richText(u.notes||'')},
-      'Customer email': {email:u.customerEmail?u.customerEmail:null},
-      'Reminder sent':  {checkbox:false}
+      'Notes':       {rich_text:richText(u.notes||'')}
     }
   });
 }
@@ -1176,20 +1167,17 @@ async function bookMeeting(){
   const productArea=document.getElementById('f-product-area').value;
   const attendees=document.getElementById('f-attendees').value;
   const notes=document.getElementById('f-notes').value.trim();
-  const customerEmail=document.getElementById('f-customer-email').value.trim();
   if(!name){alert('Please enter a visitor name.');return;}
   if(!company){alert('Please enter a company.');return;}
-  if(customerEmail&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)){alert('Please enter a valid customer email, or leave it blank.');return;}
   if(!selectedSlot){alert('Please select a time slot.');return;}
   if(!selectedSpace){alert('Please select a meeting space.');return;}
   if(!isFree(currentDay,selectedSlot,selectedSpace)){showError('This space was just taken. Please choose another.');renderSlots();renderSpacePills();selectedSpace=null;return;}
-  const booking={name,company,customerEmail,day:currentDay,time:selectedSlot,space:selectedSpace,
+  const booking={name,company,day:currentDay,time:selectedSlot,space:selectedSpace,
     spaceType:spaceType(selectedSpace),topic,productArea,attendees,notes,hosts:[...selectedHosts]};
   const ok=await saveToNotion(booking);
   if(!ok){showError('Failed to save. Please try again.');return;}
   bookings.push({...booking,visitorName:name});
   document.getElementById('f-name').value=''; document.getElementById('f-company').value='';
-  document.getElementById('f-customer-email').value='';
   document.getElementById('f-topic').value=''; document.getElementById('f-product-area').value='';
   renderProductAreaPills('f');
   document.getElementById('f-attendees').value='1'; document.getElementById('f-notes').value='';
@@ -1211,7 +1199,6 @@ function openEdit(idx){
   const b=bookings[idx]; editingBooking={pageId:b.pageId,idx};
   document.getElementById('edit-name').value=b.visitorName||b.name||'';
   document.getElementById('edit-company').value=b.company||'';
-  document.getElementById('edit-customer-email').value=b.customerEmail||'';
   document.getElementById('edit-space').value=b.space||'Private room A';
   document.getElementById('edit-topic').value=b.topic||'';
   document.getElementById('edit-product-area').value=b.productArea||'';
@@ -1231,7 +1218,6 @@ async function saveEdit(){
   const{pageId,idx}=editingBooking;
   const name=document.getElementById('edit-name').value.trim();
   const company=document.getElementById('edit-company').value.trim();
-  const customerEmail=document.getElementById('edit-customer-email').value.trim();
   const space=document.getElementById('edit-space').value;
   const topic=document.getElementById('edit-topic').value;
   const productArea=document.getElementById('edit-product-area').value;
@@ -1239,13 +1225,12 @@ async function saveEdit(){
   const notes=document.getElementById('edit-notes').value.trim();
   if(!name){alert('Visitor name is required.');return;}
   if(!company){alert('Company is required.');return;}
-  if(customerEmail&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)){alert('Please enter a valid customer email, or leave it blank.');return;}
   const btn=document.getElementById('edit-save-btn');
   btn.disabled=true; btn.textContent='Saving…';
   try {
-    await updateInNotion(pageId,{name,company,customerEmail,space,topic,productArea,attendees,notes,hosts:[...editHosts]});
-    bookings[idx]={...bookings[idx],visitorName:name,name,company,customerEmail,space,spaceType:spaceType(space),
-      topic,productArea,attendees,notes,hosts:[...editHosts],railTeam:editHosts.join(', '),reminderSent:false};
+    await updateInNotion(pageId,{name,company,space,topic,productArea,attendees,notes,hosts:[...editHosts]});
+    bookings[idx]={...bookings[idx],visitorName:name,name,company,space,spaceType:spaceType(space),
+      topic,productArea,attendees,notes,hosts:[...editHosts],railTeam:editHosts.join(', ')};
     closeEdit(); renderList(); renderSlots(); updateStats();
     showMsg('success',`<i class="ti ti-circle-check"></i> Booking updated — <strong>${name}</strong>`);
   } catch(e){ console.error(e); showError('Could not update. Please try again.'); }
@@ -1289,7 +1274,6 @@ function renderList(){
           ${b.productArea?`&nbsp;<span class="badge ${productAreaBadge(b.productArea)}">${b.productArea}</span>`:''}
         </div>
         ${hostsArr.length?`<div class="booking-detail" style="margin-top:4px;"><i class="ti ti-users" style="font-size:12px;vertical-align:-1px;"></i> ${hostTags}</div>`:''}
-        ${b.customerEmail?`<div class="booking-detail" style="margin-top:2px;"><i class="ti ti-mail" style="font-size:12px;vertical-align:-1px;"></i> ${b.customerEmail}${b.reminderSent?' <span style="color:#5DCAA5;">· reminder sent</span>':' <span style="color:var(--text-tertiary);">· reminder pending</span>'}</div>`:''}
         ${b.notes?`<div class="booking-detail" style="margin-top:2px;font-style:italic;">"${b.notes}"</div>`:''}
       </div>
       <div class="row-actions">
@@ -1415,10 +1399,10 @@ function switchTab(name,e){
 // ── EXPORT CSV ────────────────────────────────────────────────────────────
 function exportCSV(){
   if(!bookings.length){alert('No bookings to export.');return;}
-  const headers=['Day','Time','Space','Space type','Visitor name','Company','Customer email','Reminder sent','Topic','Product area','Visiting attendees','Rail team','Notes'];
+  const headers=['Day','Time','Space','Space type','Visitor name','Company','Topic','Product area','Visiting attendees','Rail team','Notes'];
   const rows=bookings.map(b=>{
     const hosts=Array.isArray(b.hosts)?b.hosts.join('; '):(b.railTeam||'');
-    return [b.day,b.time,b.space,b.spaceType,b.visitorName||b.name,b.company,b.customerEmail||'',b.reminderSent?'Yes':'No',b.topic,b.productArea||'',b.attendees,hosts,b.notes]
+    return [b.day,b.time,b.space,b.spaceType,b.visitorName||b.name,b.company,b.topic,b.productArea||'',b.attendees,hosts,b.notes]
       .map(v=>`"${String(v||'').replace(/"/g,'""')}"`);
   });
   const csv=[headers,...rows].map(r=>r.join(',')).join('\n');
