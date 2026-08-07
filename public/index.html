@@ -310,7 +310,15 @@
         <button class="day-tab" onclick="selectDay(this,'Thu 24 Sep')">Thu 24 Sep</button>
         <button class="day-tab" onclick="selectDay(this,'Fri 25 Sep')">Fri 25 Sep</button>
       </div>
-      <p class="section-label" style="margin-top:1.25rem;">Select time slot</p>
+      <div class="field" style="max-width:220px;margin-top:1.25rem;">
+        <label>Meeting duration</label>
+        <select id="f-duration" onchange="onDurationChange()">
+          <option value="30">30 minutes</option>
+          <option value="60">1 hour</option>
+          <option value="90">1.5 hours</option>
+        </select>
+      </div>
+      <p class="section-label" style="margin-top:1rem;">Select start time</p>
       <div class="space-legend">
         <span class="legend-item"><span class="legend-dot" style="background:#85B7EB;"></span> Private available</span>
         <span class="legend-item"><span class="legend-dot" style="background:#5DCAA5;"></span> Informal available</span>
@@ -319,6 +327,7 @@
         <span class="legend-item"><span class="legend-dot" style="background:#d0cfcb;"></span> Fully booked</span>
       </div>
       <div class="slot-grid" id="slot-grid"><div class="loading-bar" style="grid-column:1/-1;">Loading availability…</div></div>
+      <div id="slot-range-info" style="font-size:12px;color:var(--text-tertiary);margin-top:8px;"></div>
     </div>
     <div class="card" id="space-card" style="display:none;">
       <p class="section-label">Select a space</p>
@@ -581,9 +590,60 @@ function spaceType(s){ return SPACES.private.includes(s)?'private':SPACES.inform
 function getInitialsStr(n){ const p=n.trim().split(' '); return p.length>1?(p[0][0]+p[p.length-1][0]).toUpperCase():n.slice(0,2).toUpperCase(); }
 function richText(str){ return [{type:'text', text:{content: String(str==null?'':str)}}]; }
 
-let currentDay='Tue 22 Sep', selectedSlot=null, selectedSpace=null;
+let currentDay='Tue 22 Sep', selectedSlot=null, selectedSpace=null, selectedDuration=30;
 let selectedHosts=[], editHosts=[], editingBooking=null, calSpace='all';
 let bookings=[], availability=[];
+
+// ── DURATION HELPERS ─────────────────────────────────────────────────────
+function durationLabel(d){ return d===30?'30 minute':d===60?'1 hour':d===90?'1.5 hour':`${d} minute`; }
+function addMinutes(t,mins){
+  const[h,m]=t.split(':').map(Number);
+  const total=h*60+m+mins;
+  const hh=String(Math.floor(total/60)%24).padStart(2,'0'), mm=String(total%60).padStart(2,'0');
+  return `${hh}:${mm}`;
+}
+// Returns the ordered list of 30-min slot start times a booking of the given duration
+// needs, starting at startTime, or null if the day doesn't have enough slots left.
+function getRequiredTimes(day,startTime,duration){
+  const times=getTimesForDay(day);
+  const idx=times.indexOf(startTime);
+  if(idx===-1) return null;
+  const n=duration/30;
+  if(idx+n>times.length) return null;
+  return times.slice(idx,idx+n);
+}
+// Groups raw per-slot booking rows into logical meetings: consecutive 30-min rows
+// with identical visitor/company/space/topic/hosts/etc are treated as one multi-slot booking.
+function groupBookings(list){
+  const withIdx=list.map((b,i)=>({...b,_idx:i}));
+  const sorted=withIdx.slice().sort((a,b)=>{
+    const d=DAYS.indexOf(a.day)-DAYS.indexOf(b.day); if(d!==0) return d;
+    if(a.space!==b.space) return a.space.localeCompare(b.space);
+    return ALL_TIMES.indexOf(a.time)-ALL_TIMES.indexOf(b.time);
+  });
+  const groups=[];
+  for(const b of sorted){
+    const hostsKey=Array.isArray(b.hosts)?b.hosts.join(','):(b.railTeam||'');
+    const key=[b.day,b.space,b.visitorName||b.name,b.company,b.topic,b.productArea,hostsKey,b.notes].join('|');
+    const last=groups[groups.length-1];
+    if(last&&last.key===key&&last.day===b.day&&last.space===b.space&&
+       ALL_TIMES.indexOf(b.time)===ALL_TIMES.indexOf(last.lastTime)+1){
+      last.items.push(b); last.lastTime=b.time;
+    } else {
+      groups.push({key,day:b.day,space:b.space,items:[b],lastTime:b.time});
+    }
+  }
+  return groups.map(g=>{
+    const first=g.items[0], last=g.items[g.items.length-1];
+    return {
+      pageIds:g.items.map(x=>x.pageId), idxs:g.items.map(x=>x._idx),
+      visitorName:first.visitorName||first.name, company:first.company, day:first.day,
+      space:first.space, spaceType:first.spaceType, topic:first.topic, productArea:first.productArea,
+      attendees:first.attendees, hosts:first.hosts, railTeam:first.railTeam, notes:first.notes,
+      startTime:first.time, endTime:addMinutes(last.time,30), slotCount:g.items.length
+    };
+  });
+}
 
 // ── AUTH / SESSION ──────────────────────────────────────────────────────
 const APP_SECRET = 'X-App-Secret-4yhgjhgu77guygiuyf67ifi6';
@@ -1078,12 +1138,16 @@ function toggleEditHost(name){
 function renderSlots(){
   const grid=document.getElementById('slot-grid'), times=getTimesForDay(currentDay);
   grid.innerHTML=times.map(t=>{
-    const bkgs=getBookingsAt(currentDay,t), taken=bkgs.map(b=>b.space);
-    const freeP=SPACES.private.filter(s=>!taken.includes(s)).length;
-    const freeI=SPACES.informal.filter(s=>!taken.includes(s)).length;
-    const total=freeP+freeI+1, isSel=selectedSlot===t; // +1: External is unlimited, so a slot is never fully booked
+    const required=getRequiredTimes(currentDay,t,selectedDuration);
+    const isSel=selectedSlot===t;
+    if(!required){
+      return `<button class="slot fully-taken" disabled>${t}<div class="slot-avail">Too late for ${selectedDuration}min</div></button>`;
+    }
+    const freeP=SPACES.private.filter(s=>required.every(rt=>isFree(currentDay,rt,s))).length;
+    const freeI=SPACES.informal.filter(s=>required.every(rt=>isFree(currentDay,rt,s))).length;
+    const anyBooked=required.some(rt=>getBookingsAt(currentDay,rt).length>0);
     let cls='slot';
-    if(bkgs.length>0) cls+=' partial';
+    if(anyBooked) cls+=' partial';
     if(isSel) cls+=' selected';
     const avail=`<div class="slot-avail">${[freeP>0?freeP+'P':'',freeI>0?freeI+'I':'','E'].filter(Boolean).join(' · ')}</div>`;
     return `<button class="${cls}" onclick="selectSlot('${t}')">${t}${avail}</button>`;
@@ -1094,8 +1158,9 @@ function renderSpacePills(){
   const card=document.getElementById('space-card'), pills=document.getElementById('space-pills');
   if(!selectedSlot){card.style.display='none';return;}
   card.style.display='block';
+  const required=getRequiredTimes(currentDay,selectedSlot,selectedDuration)||[];
   pills.innerHTML=ALL_SPACES.map(s=>{
-    const free=isFree(currentDay,selectedSlot,s), type=spaceType(s);
+    const free=required.length>0&&required.every(rt=>isFree(currentDay,rt,s)), type=spaceType(s);
     const sel=selectedSpace===s?(type==='private'?' selected-private':type==='informal'?' selected-informal':' selected-external'):'';
     const icon=type==='private'?'ti-lock':type==='informal'?'ti-armchair':'ti-map-pin';
     return `<button class="space-pill${sel}${!free?' disabled':''}" onclick="selectSpace('${s}')" ${!free?'disabled':''}>
@@ -1103,19 +1168,38 @@ function renderSpacePills(){
   }).join('');
 }
 
+function updateSlotRangeInfo(){
+  const el=document.getElementById('slot-range-info');
+  if(!el) return;
+  if(!selectedSlot){el.textContent='';return;}
+  const required=getRequiredTimes(currentDay,selectedSlot,selectedDuration);
+  if(!required){el.textContent='';return;}
+  const endTime=addMinutes(required[required.length-1],30);
+  el.textContent=`Meeting will run ${required[0]}–${endTime} (${required.length} slot${required.length>1?'s':''}).`;
+}
+
+function onDurationChange(){
+  selectedDuration=parseInt(document.getElementById('f-duration').value,10);
+  selectedSlot=null; selectedSpace=null;
+  renderSlots(); renderSpacePills(); updateSlotRangeInfo();
+}
+
 function selectDay(el,day){
   document.querySelectorAll('.day-tab').forEach(t=>t.classList.remove('active')); el.classList.add('active');
-  currentDay=day; selectedSlot=null; selectedSpace=null; renderSlots(); renderSpacePills();
+  currentDay=day; selectedSlot=null; selectedSpace=null; renderSlots(); renderSpacePills(); updateSlotRangeInfo();
 }
 function selectSlot(time){
   if(selectedSlot===time){selectedSlot=null;selectedSpace=null;}
   else{
+    const required=getRequiredTimes(currentDay,time,selectedDuration);
+    if(!required){showError(`Not enough time left in the day for a ${durationLabel(selectedDuration)} meeting starting at ${time}.`);return;}
     selectedSlot=time; selectedSpace=null;
-    const busy=busyHostsAt(currentDay,time);
+    const busy=new Set();
+    required.forEach(rt=>busyHostsAt(currentDay,rt).forEach(h=>busy.add(h)));
     const conf=selectedHosts.filter(h=>busy.has(h));
-    if(conf.length){selectedHosts=selectedHosts.filter(h=>!busy.has(h));showError(`Removed ${conf.join(', ')} — conflict at this time.`);}
+    if(conf.length){selectedHosts=selectedHosts.filter(h=>!busy.has(h));showError(`Removed ${conf.join(', ')} — conflict during this time.`);}
   }
-  renderSlots(); renderSpacePills(); renderHostPills();
+  renderSlots(); renderSpacePills(); renderHostPills(); updateSlotRangeInfo();
 }
 function selectSpace(space){ selectedSpace=selectedSpace===space?null:space; renderSpacePills(); }
 function selectCalSpace(el,space){
@@ -1160,7 +1244,9 @@ function renderCalendar(){
 }
 
 // ── BOOK ──────────────────────────────────────────────────────────────────
+let isBooking=false;
 async function bookMeeting(){
+  if(isBooking) return;
   const name=document.getElementById('f-name').value.trim();
   const company=document.getElementById('f-company').value.trim();
   const topic=document.getElementById('f-topic').value;
@@ -1171,42 +1257,76 @@ async function bookMeeting(){
   if(!company){alert('Please enter a company.');return;}
   if(!selectedSlot){alert('Please select a time slot.');return;}
   if(!selectedSpace){alert('Please select a meeting space.');return;}
-  if(!isFree(currentDay,selectedSlot,selectedSpace)){showError('This space was just taken. Please choose another.');renderSlots();renderSpacePills();selectedSpace=null;return;}
-  const booking={name,company,day:currentDay,time:selectedSlot,space:selectedSpace,
-    spaceType:spaceType(selectedSpace),topic,productArea,attendees,notes,hosts:[...selectedHosts]};
-  const ok=await saveToNotion(booking);
-  if(!ok){showError('Failed to save. Please try again.');return;}
-  bookings.push({...booking,visitorName:name});
+  const required=getRequiredTimes(currentDay,selectedSlot,selectedDuration);
+  if(!required){showError(`Not enough time left in the day for a ${durationLabel(selectedDuration)} meeting.`);return;}
+  if(!required.every(rt=>isFree(currentDay,rt,selectedSpace))){showError('This space was just taken for part of that time. Please choose another.');renderSlots();renderSpacePills();selectedSpace=null;return;}
+
+  isBooking=true;
+  const btn=document.getElementById('book-btn');
+  btn.disabled=true; btn.textContent='Saving…';
+  const created=[];
+  let failed=false;
+  for(const t of required){
+    const booking={name,company,day:currentDay,time:t,space:selectedSpace,
+      spaceType:spaceType(selectedSpace),topic,productArea,attendees,notes,hosts:[...selectedHosts]};
+    const ok=await saveToNotion(booking);
+    btn.disabled=true; btn.textContent='Saving…'; // saveToNotion re-enables the button per call; keep it locked while the loop runs
+    if(!ok){failed=true;break;}
+    created.push(booking);
+  }
+  btn.disabled=false; btn.innerHTML='<i class="ti ti-check"></i> Confirm booking';
+  isBooking=false;
+
+  if(failed){
+    for(const b of created){ if(b.pageId) await deleteFromNotion(b.pageId); }
+    showError('Failed to save the full booking. Any partial slots were rolled back — please try again.');
+    return;
+  }
+
+  created.forEach(b=>bookings.push({...b,visitorName:name}));
   document.getElementById('f-name').value=''; document.getElementById('f-company').value='';
   document.getElementById('f-topic').value=''; document.getElementById('f-product-area').value='';
   renderProductAreaPills('f');
   document.getElementById('f-attendees').value='1'; document.getElementById('f-notes').value='';
+  document.getElementById('f-duration').value='30'; selectedDuration=30;
+  const bookedSpace=selectedSpace, bookedDay=currentDay, bookedHosts=[...selectedHosts];
   selectedSlot=null; selectedSpace=null; selectedHosts=[];
-  renderSlots(); renderSpacePills(); renderHostPills(); updateStats();
-  showMsg('success',`<i class="ti ti-circle-check"></i> <strong>${name}</strong> saved — ${booking.space} · ${booking.day} · ${booking.time}${booking.hosts.length?' · '+booking.hosts.join(', '):''}`)
+  renderSlots(); renderSpacePills(); renderHostPills(); updateStats(); updateSlotRangeInfo();
+  const endTime=addMinutes(required[required.length-1],30);
+  showMsg('success',`<i class="ti ti-circle-check"></i> <strong>${name}</strong> saved — ${bookedSpace} · ${bookedDay} · ${required[0]}–${endTime}${bookedHosts.length?' · '+bookedHosts.join(', '):''}`)
 }
 
 // ── DELETE ────────────────────────────────────────────────────────────────
-async function deleteBooking(pageId,idx){
-  if(!confirm('Delete this booking?')) return;
-  const ok=await deleteFromNotion(pageId);
-  if(ok){bookings.splice(idx,1);renderList();renderSlots();updateStats();renderTeam();}
-  else showError('Could not delete. Please try again.');
+async function deleteBooking(groupIdx){
+  const g=currentListGroups[groupIdx];
+  if(!g) return;
+  const label=g.slotCount>1?`this booking (${g.slotCount} linked slots, ${g.startTime}–${g.endTime})`:'this booking';
+  if(!confirm(`Delete ${label}?`)) return;
+  const results=await Promise.all(g.pageIds.map(pid=>pid?deleteFromNotion(pid):Promise.resolve(true)));
+  if(results.every(Boolean)){
+    bookings=bookings.filter(b=>!g.pageIds.includes(b.pageId));
+    renderList();renderSlots();updateStats();renderTeam();
+  } else {
+    showError('Could not delete all linked slots. Please refresh and try again.');
+  }
 }
 
 // ── EDIT ──────────────────────────────────────────────────────────────────
-function openEdit(idx){
-  const b=bookings[idx]; editingBooking={pageId:b.pageId,idx};
-  document.getElementById('edit-name').value=b.visitorName||b.name||'';
-  document.getElementById('edit-company').value=b.company||'';
-  document.getElementById('edit-space').value=b.space||'Private room A';
-  document.getElementById('edit-topic').value=b.topic||'';
-  document.getElementById('edit-product-area').value=b.productArea||'';
-  document.getElementById('edit-attendees').value=b.attendees||'1';
-  document.getElementById('edit-notes').value=b.notes||'';
-  document.getElementById('edit-slot-info').textContent=`${b.day} · ${b.time} — changing day/time requires rebooking`;
+function openEdit(groupIdx){
+  const g=currentListGroups[groupIdx];
+  if(!g) return;
+  editingBooking={pageIds:g.pageIds,gi:groupIdx};
+  document.getElementById('edit-name').value=g.visitorName||'';
+  document.getElementById('edit-company').value=g.company||'';
+  document.getElementById('edit-space').value=g.space||'Private room A';
+  document.getElementById('edit-topic').value=g.topic||'';
+  document.getElementById('edit-product-area').value=g.productArea||'';
+  document.getElementById('edit-attendees').value=g.attendees||'1';
+  document.getElementById('edit-notes').value=g.notes||'';
+  const timeLabel=g.slotCount>1?`${g.startTime}–${g.endTime} (${g.slotCount} linked slots)`:g.startTime;
+  document.getElementById('edit-slot-info').textContent=`${g.day} · ${timeLabel} — changing day, start time, or duration requires rebooking`;
   renderProductAreaPills('edit');
-  editHosts=Array.isArray(b.hosts)?[...b.hosts]:(b.railTeam||'').split(',').map(h=>h.trim()).filter(Boolean);
+  editHosts=Array.isArray(g.hosts)?[...g.hosts]:(g.railTeam||'').split(',').map(h=>h.trim()).filter(Boolean);
   renderEditHostPills();
   document.getElementById('edit-modal').classList.add('open');
 }
@@ -1215,7 +1335,9 @@ function handleOverlayClick(e){ if(e.target===document.getElementById('edit-moda
 
 async function saveEdit(){
   if(!editingBooking) return;
-  const{pageId,idx}=editingBooking;
+  const{pageIds,gi}=editingBooking;
+  const g=currentListGroups[gi];
+  if(!g){showError('Could not find this booking anymore. Please refresh and try again.');return;}
   const name=document.getElementById('edit-name').value.trim();
   const company=document.getElementById('edit-company').value.trim();
   const space=document.getElementById('edit-space').value;
@@ -1225,19 +1347,28 @@ async function saveEdit(){
   const notes=document.getElementById('edit-notes').value.trim();
   if(!name){alert('Visitor name is required.');return;}
   if(!company){alert('Company is required.');return;}
+  if(space!==g.space){
+    const times=getRequiredTimes(g.day,g.startTime,g.slotCount*30)||[g.startTime];
+    const clash=times.some(t=>bookings.some(b=>b.day===g.day&&b.time===t&&b.space===space&&!pageIds.includes(b.pageId)));
+    if(clash){showError(`${space} isn't free for the full ${g.slotCount>1?g.startTime+'–'+g.endTime:g.startTime} window. Please choose another space.`);return;}
+  }
   const btn=document.getElementById('edit-save-btn');
   btn.disabled=true; btn.textContent='Saving…';
   try {
-    await updateInNotion(pageId,{name,company,space,topic,productArea,attendees,notes,hosts:[...editHosts]});
-    bookings[idx]={...bookings[idx],visitorName:name,name,company,space,spaceType:spaceType(space),
-      topic,productArea,attendees,notes,hosts:[...editHosts],railTeam:editHosts.join(', ')};
+    for(const pageId of pageIds){
+      await updateInNotion(pageId,{name,company,space,topic,productArea,attendees,notes,hosts:[...editHosts]});
+      const idx=bookings.findIndex(b=>b.pageId===pageId);
+      if(idx!==-1) bookings[idx]={...bookings[idx],visitorName:name,name,company,space,spaceType:spaceType(space),
+        topic,productArea,attendees,notes,hosts:[...editHosts],railTeam:editHosts.join(', ')};
+    }
     closeEdit(); renderList(); renderSlots(); updateStats();
     showMsg('success',`<i class="ti ti-circle-check"></i> Booking updated — <strong>${name}</strong>`);
-  } catch(e){ console.error(e); showError('Could not update. Please try again.'); }
+  } catch(e){ console.error(e); showError('Could not update all linked slots. Please refresh and check.'); }
   finally{ btn.disabled=false; btn.innerHTML='<i class="ti ti-check"></i> Save changes'; }
 }
 
 // ── RENDER: LIST ──────────────────────────────────────────────────────────
+let currentListGroups=[];
 function renderList(){
   const searchF=(document.getElementById('filter-search').value||'').toLowerCase();
   const dayF=document.getElementById('filter-day').value;
@@ -1245,29 +1376,31 @@ function renderList(){
   const hostF=document.getElementById('filter-host').value;
   const topicF=document.getElementById('filter-topic').value;
   const paF=document.getElementById('filter-product-area').value;
-  const filtered=bookings.map((b,i)=>({...b,_idx:i})).filter(b=>
-    (!searchF||(b.visitorName||b.name||'').toLowerCase().includes(searchF)||(b.company||'').toLowerCase().includes(searchF))&&
+  const groups=groupBookings(bookings).filter(b=>
+    (!searchF||(b.visitorName||'').toLowerCase().includes(searchF)||(b.company||'').toLowerCase().includes(searchF))&&
     (!dayF||b.day===dayF)&&(!spaceF||b.spaceType===spaceF)&&
     (!hostF||(b.railTeam||'').includes(hostF))&&(!topicF||b.topic===topicF)&&(!paF||b.productArea===paF)
-  ).sort((a,b)=>{const d=DAYS.indexOf(a.day)-DAYS.indexOf(b.day);return d!==0?d:a.time.localeCompare(b.time);});
+  ).sort((a,b)=>{const d=DAYS.indexOf(a.day)-DAYS.indexOf(b.day);return d!==0?d:a.startTime.localeCompare(b.startTime);});
+  currentListGroups=groups;
   const list=document.getElementById('booking-list'), empty=document.getElementById('empty-state');
-  if(!filtered.length){list.innerHTML='';empty.style.display='block';return;}
+  if(!groups.length){list.innerHTML='';empty.style.display='block';return;}
   empty.style.display='none';
-  list.innerHTML=filtered.map(b=>{
-    const isPriv=b.spaceType==='private', isExt=b.spaceType==='external', visName=b.visitorName||b.name||'—';
+  list.innerHTML=groups.map((b,gi)=>{
+    const isPriv=b.spaceType==='private', isExt=b.spaceType==='external', visName=b.visitorName||'—';
     const hostsArr=Array.isArray(b.hosts)?b.hosts:(b.railTeam||'').split(',').map(h=>h.trim()).filter(Boolean);
     const hostTags=hostsArr.map(h=>{
       const m=TEAM.find(x=>fullName(x)===h.trim()),rc=m?(RC[m.role]||RC.Other):RC.Other;
       return `<span style="display:inline-block;font-size:10px;padding:1px 7px;border-radius:10px;background:${rc.bg};color:${rc.color};border:0.5px solid ${rc.border};margin-right:3px;">${h}</span>`;
     }).join('');
     const attLabel=b.attendees&&b.attendees!=='1'?`&nbsp;<i class="ti ti-users" style="font-size:11px;vertical-align:-1px;"></i> ${b.attendees}`:'';
+    const timeLabel=b.slotCount>1?`${b.startTime}–${b.endTime}`:b.startTime;
     return `<div class="booking-row">
       <div class="booking-avatar${isPriv?'':isExt?' external':' informal'}">${getInitialsStr(visName)}</div>
       <div class="booking-meta">
         <div class="booking-name">${visName} <span style="font-weight:400;color:#888;font-size:13px;">· ${b.company||''}</span></div>
         <div class="booking-detail">
           <i class="ti ti-calendar" style="font-size:12px;vertical-align:-1px;"></i> ${b.day} &nbsp;
-          <i class="ti ti-clock" style="font-size:12px;vertical-align:-1px;"></i> ${b.time} &nbsp;
+          <i class="ti ti-clock" style="font-size:12px;vertical-align:-1px;"></i> ${timeLabel} &nbsp;
           <span class="badge ${isPriv?'badge-blue':isExt?'badge-purple':'badge-teal'}">${b.space}</span>
           ${attLabel}
           ${b.topic?`&nbsp;<span class="badge ${topicBadge(b.topic)}">${b.topic}</span>`:''}
@@ -1277,8 +1410,8 @@ function renderList(){
         ${b.notes?`<div class="booking-detail" style="margin-top:2px;font-style:italic;">"${b.notes}"</div>`:''}
       </div>
       <div class="row-actions">
-        <button class="edit-btn" onclick="openEdit(${b._idx})" aria-label="Edit"><i class="ti ti-pencil"></i></button>
-        <button class="del-btn" onclick="deleteBooking('${b.pageId||''}',${b._idx})" aria-label="Delete"><i class="ti ti-trash"></i></button>
+        <button class="edit-btn" onclick="openEdit(${gi})" aria-label="Edit"><i class="ti ti-pencil"></i></button>
+        <button class="del-btn" onclick="deleteBooking(${gi})" aria-label="Delete"><i class="ti ti-trash"></i></button>
       </div>
     </div>`;
   }).join('');
@@ -1287,13 +1420,14 @@ function renderList(){
 // ── RENDER: TEAM ──────────────────────────────────────────────────────────
 function renderTeam(){
   const grid=document.getElementById('team-grid'), hostCounts={};
-  bookings.forEach(b=>{
+  const groups=groupBookings(bookings);
+  groups.forEach(b=>{
     (Array.isArray(b.hosts)?b.hosts:(b.railTeam||'').split(',').map(h=>h.trim()).filter(Boolean))
       .forEach(h=>{if(h)hostCounts[h]=(hostCounts[h]||0)+1;});
   });
   const hosting=Object.keys(hostCounts).length;
   document.getElementById('stat-hosts').textContent=hosting;
-  document.getElementById('stat-avg').textContent=hosting>0?(bookings.length/hosting).toFixed(1):'0';
+  document.getElementById('stat-avg').textContent=hosting>0?(groups.length/hosting).toFixed(1):'0';
   grid.innerHTML=REAL_TEAM.map(m=>{
     const name=fullName(m),rc=RC[m.role]||RC.Other,count=hostCounts[name]||0;
     return `<div class="team-card">
@@ -1307,11 +1441,12 @@ function renderTeam(){
 
 // ── STATS ─────────────────────────────────────────────────────────────────
 function updateStats(){
-  document.getElementById('stat-total').textContent=bookings.length;
-  document.getElementById('stat-private').textContent=bookings.filter(b=>b.spaceType==='private').length;
-  document.getElementById('stat-informal').textContent=bookings.filter(b=>b.spaceType==='informal').length;
-  document.getElementById('stat-external').textContent=bookings.filter(b=>b.spaceType==='external').length;
-  document.getElementById('stat-attendees').textContent=bookings.reduce((s,b)=>s+(parseInt(b.attendees)||1),0);
+  const groups=groupBookings(bookings);
+  document.getElementById('stat-total').textContent=groups.length;
+  document.getElementById('stat-private').textContent=groups.filter(b=>b.spaceType==='private').length;
+  document.getElementById('stat-informal').textContent=groups.filter(b=>b.spaceType==='informal').length;
+  document.getElementById('stat-external').textContent=groups.filter(b=>b.spaceType==='external').length;
+  document.getElementById('stat-attendees').textContent=groups.reduce((s,b)=>s+(parseInt(b.attendees)||1),0);
   renderTeam();
 }
 
@@ -1399,10 +1534,11 @@ function switchTab(name,e){
 // ── EXPORT CSV ────────────────────────────────────────────────────────────
 function exportCSV(){
   if(!bookings.length){alert('No bookings to export.');return;}
-  const headers=['Day','Time','Space','Space type','Visitor name','Company','Topic','Product area','Visiting attendees','Rail team','Notes'];
-  const rows=bookings.map(b=>{
+  const groups=groupBookings(bookings);
+  const headers=['Day','Start time','End time','Duration (min)','Space','Space type','Visitor name','Company','Topic','Product area','Visiting attendees','Rail team','Notes'];
+  const rows=groups.map(b=>{
     const hosts=Array.isArray(b.hosts)?b.hosts.join('; '):(b.railTeam||'');
-    return [b.day,b.time,b.space,b.spaceType,b.visitorName||b.name,b.company,b.topic,b.productArea||'',b.attendees,hosts,b.notes]
+    return [b.day,b.startTime,b.endTime,b.slotCount*30,b.space,b.spaceType,b.visitorName,b.company,b.topic,b.productArea||'',b.attendees,hosts,b.notes]
       .map(v=>`"${String(v||'').replace(/"/g,'""')}"`);
   });
   const csv=[headers,...rows].map(r=>r.join(',')).join('\n');
